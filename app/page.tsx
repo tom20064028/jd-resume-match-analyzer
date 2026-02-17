@@ -5,7 +5,7 @@ import Image from "next/image";
 
 
 export default function Home() {
-
+  const [result, setResult] = useState("");
   useEffect(() => {
     const form = document.querySelector("form");
     form?.addEventListener("submit", (e) => {
@@ -17,7 +17,8 @@ export default function Home() {
         method: "POST",
         body: JSON.stringify({ jd, resume }),
       }).then(res => res.json()).then(data => {
-        console.log(data);
+        console.log(JSON.parse(data.raw));
+        setResult(data.raw);
       });
     });
   }, []);
@@ -44,6 +45,12 @@ export default function Home() {
             </div>
             <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md">Analyze</button>
           </form>
+          <div className="flex flex-col gap-2">
+            <h2 className="text-2xl font-bold">Result</h2>
+            <pre className="text-sm text-gray-500">
+              <code id="result">{result}</code>
+            </pre>
+          </div>
         </div>
       </main>
     </div>
