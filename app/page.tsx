@@ -5,7 +5,7 @@ import Image from "next/image";
 
 
 export default function Home() {
-  const [result, setResult] = useState("");
+  const [result, setResult] = useState<any>(null);
   useEffect(() => {
     const form = document.querySelector("form");
     form?.addEventListener("submit", (e) => {
@@ -18,7 +18,7 @@ export default function Home() {
         body: JSON.stringify({ jd, resume }),
       }).then(res => res.json()).then(data => {
         console.log(JSON.parse(data.raw));
-        setResult(data.raw);
+        setResult(JSON.parse(data.raw));
       });
     });
   }, []);
@@ -47,9 +47,32 @@ export default function Home() {
           </form>
           <div className="flex flex-col gap-2">
             <h2 className="text-2xl font-bold">Result</h2>
-            <pre className="text-sm text-gray-500">
+            {/* <pre className="text-sm text-gray-500">
               <code id="result">{result}</code>
-            </pre>
+            </pre> */}
+            {result && (
+              <div style={{ marginTop: 20 }}>
+                <h3>Score</h3>
+                <p>{result.score}</p>
+
+                <h3>Missing skills</h3>
+                <ul>
+                  {result.missing_skills?.map((s: string, i: number) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
+
+                <h3>Rewrite suggestions</h3>
+                <ul>
+                  {result.rewrite_suggestions?.map((s: string, i: number) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
+
+                <h4>Raw JSON (debug)</h4>
+                <pre>{JSON.stringify(result, null, 2)}</pre>
+              </div>
+            )}
           </div>
         </div>
       </main>

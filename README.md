@@ -38,3 +38,5 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 # jd-resume-match-analyzer
 
 Next: call OpenAI API and return structured result
+
+Stable JSON output enforced; next: render fields in UI
