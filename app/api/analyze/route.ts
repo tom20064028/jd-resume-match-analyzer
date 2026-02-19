@@ -19,13 +19,14 @@ export async function POST(req: Request) {
     const completion = await client.chat.completions.create({
       model: "openai/gpt-4o-mini", // 例子：你可換其他 OpenRouter model
       messages: [
-        { role: "system", content: "You are a helpful assistant. Return ONLY valid JSON." },
+        { role: "system", content: 'You are a resume analysis engine.\n\nReturn ONLY valid JSON in this exact structure:\n\n{"score": number,"missing_skills": string[],"rewrite_suggestions": string[]}\n\nDo not add any explanation or extra keys.' },
         {
           role: "user",
           content:
             `Analyze resume vs JD and return JSON:\n` +
             `{"score":number,"missing_skills":string[],"rewrite_suggestions":string[]}\n\n` +
-            `JD:\n${jd}\n\nResume:\n${resume}`,
+            `JD:\n${jd}\n\nResume:\n${resume} \n\n` +
+            `If unsure, still return the structure with empty arrays.`,
         },
       ],
       temperature: 0.2,

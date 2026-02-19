@@ -1,0 +1,25 @@
+Working Experience
+Inspirit Studio (Internship)                                                                , 06/2018- 12/2018
+Contributed to the development of "Buddigo," a multi-platform mobile application that facilitates delivery services.
+Maintained and optimized the PHP backend API, ensuring robust performance and reliability.
+Developed new APIs to support additional features and functionalities within the application, enhancing user experience and expanding service offerings.
+
+								 Salary: HKD $6000
+
+
+Neufast Private Group Limited (Front-end Developer)                , 08/2019- 04/2021
+Engineered a cutting-edge web application using React.js, empowering job seekers to seamlessly engage in online interviews with companies, revolutionizing the recruitment experience.
+Pioneered advanced features to analyze interview responses and generate insightful performance scores, equipping hiring managers with data-driven tools to streamline decision-making.
+Developed and optimized robust backend APIs using a Python-based server, providing reliable support for the web application and ensuring smooth, scalable functionality.
+Orchestrated a high-performance system architecture on AWS, delivering exceptional scalability and reliability to meet the demands of a growing user base.
+
+							             Salary: HKD $23000
+
+
+Hypthon Limited (Full Stack Developer)            		 , 04/2021- present
+Designed and developed dynamic, responsive websites leveraging modern front-end tools and frameworks such as React.js, Vue.js, and Tailwind CSS, collaborating closely with designers and stakeholders to deliver visually appealing, user-centric digital experiences that aligned with project goals.
+Architected and maintained a robust content management system (CMS) using PHP, empowering users with seamless control over front-end content while leading efforts to streamline content updates, fostering team efficiency and ensuring a cohesive workflow.
+Contributed to the creation of high-performance backend APIs, utilizing .NET Core 8 for an e-commerce platform, while applying Node.js and Python expertise to develop an admin portal and API server; collaborated with cross-functional teams to enhance system functionality, elevate user experience, and guide junior developers in best practices.
+Configured and managed a scalable cloud infrastructure on AWS, hosting websites and CMS solutions, spearheading optimization efforts with the team to ensure performance, reliability, and adaptability to evolving business needs while mentoring peers on cloud deployment strategies.
+
+								Salary: HKD $35000

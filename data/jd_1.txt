@@ -1,0 +1,71 @@
+Notre client est un éditeur de logiciel dans le domaine de l'assurance.
+
+L'équipe IT S'est Montée Autour D'une Équipe Agile Expérimentée Dans Les Toutes Dernières Technologies Du Digital
+
+Progressive Web App
+
+Dockerisation
+
+Cloud Provide
+
+Machine Learning
+
+Intégré à L'équipe Technique, Votre Rôle De Développeur Vous Permettra De Travailler Dans Un Contexte Moderne, En Lien Avec Les Dernières Technologies
+
+Utilisation de Node.js, React.js
+
+Intégration et déploiement continu via GitLab CI/CD
+
+Déploiement dockerisé sur un orchestrateur
+
+Utilisation de services managés AWS (bases de données, authentification,
+
+messaging, serverless.)
+
+Dans Ce Cadre, Vos Missions Seront
+
+ Participer activement à la conception technico/fonctionnelle de la plateforme :
+
+Proposer des solutions techniques
+
+Mise en œuvre de POC
+
+Élaboration de stratégie de développement.
+
+ Assurer les développements à votre charge dans un contexte de développement AGILE (Scrum) à l'état de l'art (conception, tests unitaires, déploiement continu, performances).
+ Rédiger la documentation technique de l'application de manière automatisée ou non.
+
+Conditions De Poste
+
+Contrat CDI
+
+Salaire : 40K à 45K brut annuel (négociable en fonction du profil)
+
+Télétravail possible 2 jours par semaine
+
+Avantages : mutuelle, souplesse des horaires + primes
+
+Profil recherché
+
+De formation Bac+5 en informatique, vous avez 4 à 5 ans d'expérience en tant que développeur JS.
+
+Curieux et motivé, vous n'hésitez pas à proposer ou tester des solutions technologiques nouvelles et à vous remettre en cause.
+
+Vous avez déjà utilisé les outils suivants et les connaissez à minima :
+
+Node.js
+
+React.js
+
+Architecture flux (Redux)
+
+API Rest
+
+Git
+
+HTML / CSS
+
+Environnements Linux
+
+Travaillant en Sprint de 2 semaines, la connaissance de l'agilité et de la méthode Scrum est un plus, même si nous sommes prêts à vous convertir à ces méthodes de développement.
+
