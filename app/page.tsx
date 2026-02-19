@@ -6,10 +6,13 @@ import Image from "next/image";
 
 export default function Home() {
   const [result, setResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     const form = document.querySelector("form");
     form?.addEventListener("submit", (e) => {
       e.preventDefault();
+      setLoading(true);
       const formData = new FormData(form);
       const jd = formData.get("jd");
       const resume = formData.get("resume");
@@ -17,8 +20,22 @@ export default function Home() {
         method: "POST",
         body: JSON.stringify({ jd, resume }),
       }).then(res => res.json()).then(data => {
-        console.log(JSON.parse(data.raw));
-        setResult(JSON.parse(data.raw));
+        let parsed;
+
+        try {
+          parsed = JSON.parse(data.raw);
+        } catch {
+          parsed = {
+            score: 0,
+            missing_skills: [],
+            rewrite_suggestions: ["Invalid JSON from model"]
+          };
+        }
+        setResult(parsed);
+        setLoading(false);
+      }).catch(err => {
+        console.error(err);
+        setLoading(false);
       });
     });
   }, []);
@@ -43,37 +60,34 @@ export default function Home() {
               <label htmlFor="resume">Resume</label>
               <textarea name="resume" id="resume" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} />
             </div>
-            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md">Analyze</button>
+            <button type="submit" className={`bg-blue-500 text-white px-4 py-2 rounded-md ${loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`} disabled={loading}>{loading ? "Analyzing..." : "Analyze"}</button>
           </form>
-          <div className="flex flex-col gap-2">
-            <h2 className="text-2xl font-bold">Result</h2>
-            {/* <pre className="text-sm text-gray-500">
-              <code id="result">{result}</code>
-            </pre> */}
-            {result && (
-              <div style={{ marginTop: 20 }}>
-                <h3>Score</h3>
-                <p>{result.score}</p>
+          {result && (
+            <div className="flex flex-col gap-2 mt-4">
+              <h2 className="text-2xl font-bold">Result</h2>         
+                <div className="mt-4">
+                  <h3 className="text-lg font-semibold">Score</h3>
+                  <p>{result.score}</p>
 
-                <h3>Missing skills</h3>
-                <ul>
-                  {result.missing_skills?.map((s: string, i: number) => (
-                    <li key={i}>{s}</li>
-                  ))}
-                </ul>
+                  <h3 className="text-lg font-semibold mt-4">Missing skills</h3>
+                  <ul>
+                    {result.missing_skills?.map((s: string, i: number) => (
+                      <li className="list-disc list-inside" key={i}>{s}</li>
+                    ))}
+                  </ul>
 
-                <h3>Rewrite suggestions</h3>
-                <ul>
-                  {result.rewrite_suggestions?.map((s: string, i: number) => (
-                    <li key={i}>{s}</li>
-                  ))}
-                </ul>
+                  <h3 className="text-lg font-semibold mt-4">Rewrite suggestions</h3>
+                  <ul>
+                    {result.rewrite_suggestions?.map((s: string, i: number) => (
+                      <li className="list-disc list-inside" key={i}>{s}</li>
+                    ))}
+                  </ul>
 
-                <h4>Raw JSON (debug)</h4>
-                <pre>{JSON.stringify(result, null, 2)}</pre>
-              </div>
-            )}
-          </div>
+                  <h4 className="text-lg font-semibold mt-4">Raw JSON (debug)</h4>
+                  <pre className="whitespace-break-spaces text-sm text-gray-500">{JSON.stringify(result, null, 2)}</pre>
+                </div>
+            </div>
+          )}
         </div>
       </main>
     </div>
