@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
 
 export default function Home() {
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-
+  const [showRaw, setShowRaw] = useState(false);
   useEffect(() => {
     const form = document.querySelector("form");
     form?.addEventListener("submit", (e) => {
@@ -54,11 +56,11 @@ export default function Home() {
           <form className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <label htmlFor="jd">JD</label>
-              <textarea name="jd" id="jd" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} />
+              <textarea name="jd" id="jd" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} required />
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="resume">Resume</label>
-              <textarea name="resume" id="resume" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} />
+              <textarea name="resume" id="resume" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} required />
             </div>
             <button type="submit" className={`bg-blue-500 text-white px-4 py-2 rounded-md ${loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`} disabled={loading}>{loading ? "Analyzing..." : "Analyze"}</button>
           </form>
@@ -68,23 +70,30 @@ export default function Home() {
                 <div className="mt-4">
                   <h3 className="text-lg font-semibold">Score</h3>
                   <p>{result.score}</p>
+                  {result.missing_skills?.length > 0 && (
+                    <>
+                      <h3 className="text-lg font-semibold mt-4">Missing skills</h3>
+                      <ul>
+                        {result.missing_skills?.map((s: string, i: number) => (
+                          <li className="list-disc list-inside" key={i}>{s}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
 
-                  <h3 className="text-lg font-semibold mt-4">Missing skills</h3>
-                  <ul>
-                    {result.missing_skills?.map((s: string, i: number) => (
-                      <li className="list-disc list-inside" key={i}>{s}</li>
-                    ))}
-                  </ul>
+                  {result.rewrite_suggestions?.length > 0 && (
+                    <>
+                      <h3 className="text-lg font-semibold mt-4">Rewrite suggestions</h3>
+                      <ul>
+                        {result.rewrite_suggestions?.map((s: string, i: number) => (
+                          <li className="list-disc list-inside" key={i}>{s}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
 
-                  <h3 className="text-lg font-semibold mt-4">Rewrite suggestions</h3>
-                  <ul>
-                    {result.rewrite_suggestions?.map((s: string, i: number) => (
-                      <li className="list-disc list-inside" key={i}>{s}</li>
-                    ))}
-                  </ul>
-
-                  <h4 className="text-lg font-semibold mt-4">Raw JSON (debug)</h4>
-                  <pre className="whitespace-break-spaces text-sm text-gray-500">{JSON.stringify(result, null, 2)}</pre>
+                  <button onClick={() => setShowRaw(!showRaw)} className="text-sm font-semibold mt-4 text-center text-gray-500 block w-full">Raw JSON (debug) <FontAwesomeIcon icon={faAngleDown} className={`ml-2 transition-all duration-500 ${showRaw ? "rotate-180" : ""}`}/></button>
+                  <pre className={`whitespace-break-spaces text-sm text-gray-500 overflow-hidden transition-all duration-500 ease-in-out ${showRaw ? "h-96" : "h-0"}`}>{JSON.stringify(result, null, 2)}</pre>
                 </div>
             </div>
           )}
