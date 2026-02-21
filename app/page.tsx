@@ -23,9 +23,9 @@ export default function Home() {
     form?.addEventListener("submit", (e) => {
       e.preventDefault();
       setLoading(true);
-      // const formData = new FormData(form);
-      // const jd = formData.get("jd");
-      // const resume = formData.get("resume");
+      const formData = new FormData(form);
+      const jd = formData.get("jd");
+      const resume = formData.get("resume");
       fetch("/api/analyze", {
         method: "POST",
         body: JSON.stringify({ jd, resume }),
