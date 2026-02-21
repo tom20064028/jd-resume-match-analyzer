@@ -7,17 +7,25 @@ import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
 
 export default function Home() {
+
+  const exampleJD = `We are looking for a frontend developer with React, TypeScript, and REST API experience...`;
+
+  const exampleResume = `Frontend developer with 4 years experience using React, Next.js, and API integrations...`;
+
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
+  const [jd, setJd] = useState("")
+  const [resume, setResume] = useState("")
+
   useEffect(() => {
     const form = document.querySelector("form");
     form?.addEventListener("submit", (e) => {
       e.preventDefault();
       setLoading(true);
-      const formData = new FormData(form);
-      const jd = formData.get("jd");
-      const resume = formData.get("resume");
+      // const formData = new FormData(form);
+      // const jd = formData.get("jd");
+      // const resume = formData.get("resume");
       fetch("/api/analyze", {
         method: "POST",
         body: JSON.stringify({ jd, resume }),
@@ -56,13 +64,25 @@ export default function Home() {
           <form className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <label htmlFor="jd">JD</label>
-              <textarea name="jd" id="jd" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} required />
+              <textarea name="jd" id="jd" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} required value={jd} onChange={(e) => setJd(e.target.value)} />
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="resume">Resume</label>
-              <textarea name="resume" id="resume" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} required />
+              <textarea name="resume" id="resume" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} required value={resume} onChange={(e) => setResume(e.target.value)} />
             </div>
-            <button type="submit" className={`bg-blue-500 text-white px-4 py-2 rounded-md ${loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`} disabled={loading}>{loading ? "Analyzing..." : "Analyze"}</button>
+            <div className="grid grid-cols-2 gap-2 w-full">
+              <button type="submit" className={`bg-blue-500 text-white px-4 py-2 rounded-md ${loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`} disabled={loading}>{loading ? "Analyzing..." : "Analyze"}</button>
+              <button
+                type="button"
+                className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer"
+                onClick={() => {
+                  setJd(exampleJD);
+                  setResume(exampleResume);
+                }}
+              >
+                Use example
+              </button>
+            </div>
           </form>
           {result && (
             <div className="flex flex-col gap-2 mt-4">
