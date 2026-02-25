@@ -6,19 +6,18 @@ import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
 export default function InterviewPage() {
     const [jd, setJd] = useState("")
-
+    const [result, setResult] = useState<any>(null)
 
     useEffect(() => {
         const form = document.querySelector("form");
         form?.addEventListener("submit", (e) => {
           e.preventDefault();
-          setLoading(true);
+          // setLoading(true);
           const formData = new FormData(form);
           const jd = formData.get("jd");
-          const resume = formData.get("resume");
-          fetch("/api/analyze", {
+          fetch("/api/interview", {
             method: "POST",
-            body: JSON.stringify({ jd, resume }),
+            body: JSON.stringify({ jd }),
           }).then(res => res.json()).then(data => {
             let parsed;
     
@@ -26,16 +25,15 @@ export default function InterviewPage() {
               parsed = JSON.parse(data.raw);
             } catch {
               parsed = {
-                score: 0,
-                missing_skills: [],
-                rewrite_suggestions: ["Invalid JSON from model"]
+                questions: []
               };
             }
+            console.log(parsed)
             setResult(parsed);
-            setLoading(false);
+            // setLoading(false);
           }).catch(err => {
             console.error(err);
-            setLoading(false);
+            // setLoading(false);
           });
         });
       }, []);
@@ -56,12 +54,24 @@ export default function InterviewPage() {
                 
                         <button className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer">Generate Questions</button>
                 
-                        <div style={{ marginTop: 20 }}>
-                            {/* questions will appear here */}
-                        </div>
+                        {result && (
+                          <div className="flex flex-col gap-2 mt-4">
+                            <h2 className="text-2xl font-bold">Result</h2>         
+                            <div className="mt-4">
+                              {result.questions?.length > 0 && (
+                                <>
+                                  <h3 className="text-lg font-semibold mt-4">Questions</h3>
+                                  <ul>
+                                    {result.questions?.map((s: string, i: number) => (
+                                      <li className="list-disc list-inside" key={i}>{s}</li>
+                                    ))}
+                                  </ul>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        )}
                     </form>
-                   
-
                 </div>
             </main>
         </div>
