@@ -14,6 +14,12 @@ export default function InterviewPage() {
         feedback: string;
     };
 
+    type FinalResult = {
+        overall_score: number,
+        summary: string,
+        improvement: string
+    };
+
     const [jd, setJd] = useState("")
     const [result, setResult] = useState<any>(null)
     const [loading, setLoading] = useState(false);
@@ -23,6 +29,7 @@ export default function InterviewPage() {
     const [score, setScore] = useState(0)
     const [feedback, setFeedback] = useState("")
     const [history, setHistory] = useState<HistoryItem[]>([])
+    const [finalResult, setFinalResult] = useState<FinalResult>()
 
     useEffect(() => {
         const jdForm = document.querySelector("#jd-form");
@@ -98,6 +105,35 @@ export default function InterviewPage() {
         }) 
     }
 
+    const finishInterview = () => {
+
+        fetch("/api/interview-finish", {
+            method: "POST",
+            body: JSON.stringify({ history }),
+        }).then(res => res.json()).then(data => {
+            let parsed;
+    
+            try {
+                parsed = JSON.parse(data.raw);
+                setFinalResult(parsed)
+            } catch {
+                parsed = {
+                    "overall_score": 0,
+                    "summary": "",
+                    "improvement": ""
+                };
+            }
+            
+            setLoading(false);
+        }).catch(err => {
+            console.error(err);
+        }).finally(() => {
+            setLoading(false);
+            setStage(2)
+        }) 
+    }
+
+
     return (
         <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
             <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
@@ -156,6 +192,11 @@ export default function InterviewPage() {
                                         <p>{feedback}</p>
                                     </div>
                                 }
+                                { history.length !== 0 && 
+                                    <button className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer mt-8" type="button" onClick={() => finishInterview()}>
+                                        Finish Interview
+                                    </button>
+                                }
                             </div>
                            
                             <form id="interview-form" className="flex flex-col gap-4">
@@ -167,6 +208,33 @@ export default function InterviewPage() {
                                 <button type="button" onClick={() => submitAnswer()} className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer">Answer</button>
                             </form>
                         </>
+                    )}
+                    { stage === 2 && (
+                        <div>
+                            <h2 className="text-2xl font-bold">Interview End!</h2> 
+                            <h3 className="text-lg font-semibold underline mt-8">Your Result:</h3>
+                            { !!finalResult?.overall_score && 
+                                <div className="mt-4">
+                                    <h3 className="text-lg font-semibold">Score</h3>
+                                    <p>{finalResult?.overall_score}</p>
+                                </div>
+                            }
+                            { !!finalResult?.summary && 
+                                <div className="mt-4">
+                                    <h3 className="text-lg font-semibold">Summary</h3>
+                                    <p>{finalResult?.summary}</p>
+                                </div>
+                            }
+                            { !!finalResult?.improvement&& 
+                                <div className="mt-4">
+                                    <h3 className="text-lg font-semibold">Improvement</h3>
+                                    <p>{finalResult?.improvement}</p>
+                                </div>
+                            }
+                            <button className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer mt-8" type="button" onClick={() => setStage(0)}>
+                                Back to Home
+                            </button>
+                        </div>
                     )}
                 </div>
             </main>
