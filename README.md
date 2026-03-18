@@ -88,4 +88,4 @@ AI suggestions are indicative and may not fully reflect hiring decisions.
 
 ## 👤 Author
 
-Built as a personal project to explore practical LLM integration in production-style frontend/backend workflows.
+Built as a personal project to explore practical LLM integration in production-style frontend/backend workflows. 
