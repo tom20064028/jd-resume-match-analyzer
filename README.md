@@ -46,6 +46,23 @@ Job Description → AI question → Candidate answer → AI evaluation → Next 
 3. Coding Interview Evaluation (Prototype)
 Coding problem + candidate solution → AI reasoning → Bug detection + score
 
+## Project Structure
+```
+app/
+ ├ jd-resume-analyzer
+ ├ interview-simulator
+ ├ coding-interview
+ ├ copilot
+ ├ interview
+ └ api
+     ├ analyze
+     ├ interview
+     ├ interview-contextual
+     ├ interview-start
+     ├ interview-turn
+     └ interview-finish
+````
+
 ## 🛠 Tech Stack
 
 - Next.js (App Router)
