@@ -23,18 +23,20 @@ export default function CodingInterviewPage() {
                 const formData = new FormData(form);
                 const problem = formData.get("problem");
                 const solution = formData.get("solution");
-                 // const res = await fetch("/api/interview-contextual", {
-                //     method: "POST",
-                //     body: JSON.stringify({ jd, resume, missing_skills: nextAnalysis.missing_skills }),
-                // })
+                const res = await fetch("/api/code-evaluate", {
+                    method: "POST",
+                    body: JSON.stringify({ problem, solution }),
+                })
                 try {
-                    // const analysisResult = await res1.json()
-                    const parsed: Evaluation = {
-                        score: 7,
-                        bugs: ["edge case not handled"],
-                        followup: "How to optimize?"
-                    }
-                    setEvaluation(parsed);
+                    const parsed = await res.json()
+                    
+                    // const parsed: Evaluation = {
+                    //     score: 7,
+                    //     bugs: ["edge case not handled"],
+                    //     followup: "How to optimize?"
+                    // }
+                    console.log(JSON.parse(parsed.raw) as Evaluation)
+                    setEvaluation(JSON.parse(parsed.raw) as Evaluation);
                 } catch {
                     setEvaluation({
                         score: 0,
