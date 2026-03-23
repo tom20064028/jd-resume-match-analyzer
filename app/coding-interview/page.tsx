@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type SyntheticEvent } from "react";
 import Link from "next/link";
 
 
@@ -30,7 +30,7 @@ export default function CodingInterviewPage() {
     const [loading, setLoading] = useState(false);
     const [stage, setStage] = useState<Stage>("initial")
 
-    const submitForm = async (e: HTMLFormElement) => {
+    const submitForm = async (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         try {
