@@ -7,20 +7,22 @@ import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 export default function InterviewCopilotPage() {
     const exampleJD = `We are looking for a frontend developer with React, TypeScript, and API experience...`;
 
-    type HistoryItem = {
-        question: string;
-        answer: string;
-        score: number;
-        feedback: string;
-    };
+    // type HistoryItem = {
+    //     question: string;
+    //     answer: string;
+    //     score: number;
+    //     feedback: string;
+    // };
 
-    type FinalResult = {
-        overall_score: number,
-        summary: string,
-        improvement: string
-    };
+    // type FinalResult = {
+    //     overall_score: number,
+    //     summary: string,
+    //     improvement: string
+    // };
 
     const [jd, setJd] = useState("")
+    const [resume, setResume] = useState("")
+
     const [result, setResult] = useState<any>(null)
     const [loading, setLoading] = useState(false);
     const [stage, setStage] = useState(0)
@@ -28,14 +30,44 @@ export default function InterviewCopilotPage() {
     const [answer, setAnswer] = useState("")
     const [score, setScore] = useState(0)
     const [feedback, setFeedback] = useState("")
-    const [history, setHistory] = useState<HistoryItem[]>([])
-    const [finalResult, setFinalResult] = useState<FinalResult>()
+    const [showRaw, setShowRaw] = useState(false);
+
+    // const [history, setHistory] = useState<HistoryItem[]>([])
+    // const [finalResult, setFinalResult] = useState<FinalResult>()
 
     useEffect(() => {
-        const jdForm = document.querySelector("#jd-form");
-        jdForm?.addEventListener("submit", (e) => {
-          e.preventDefault();
-          console.log("test")
+        const form = document.querySelector("form");
+        form?.addEventListener("submit", (e) => {
+            e.preventDefault();
+            setLoading(true);
+            const formData = new FormData(form);
+            const jd = formData.get("jd");
+            const resume = formData.get("resume");
+            fetch("/api/interview-copilot", {
+                method: "POST",
+                body: JSON.stringify({ jd, resume }),
+            }).then(res => res.json()).then(data => {
+                let parsed;
+
+                try {
+                parsed = JSON.parse(data.raw);
+                } catch {
+                parsed = {
+                    match_score: 0,
+                    missing_skills: [],
+                    interview_questions: ["Invalid JSON from model"]
+                };
+                }
+                setResult(parsed);
+                setLoading(false);
+            }).catch(err => {
+                console.error(err);
+                setLoading(false);
+            });
+        });
+    }, []);
+
+    const interviewStart = () => {
         //   setLoading(true);
         //   const formData = new FormData(jdForm as HTMLFormElement);
         //   const jd = formData.get("jd");
@@ -61,8 +93,7 @@ export default function InterviewCopilotPage() {
         //     setLoading(false);
         //     setStage(1)
         //   }) 
-        });
-    }, []);
+    }
 
     const submitAnswer = () => {
         const interviewForm = document.querySelector("#interview-form");
@@ -149,42 +180,55 @@ export default function InterviewCopilotPage() {
                         </p>
                     </div>
                     { stage === 0 && (
-                        <form id="jd-form" className="flex flex-col gap-4">
+                        <form className="flex flex-col gap-4">
                             <div className="flex flex-col gap-2">
                                 <label htmlFor="jd">JD</label>
                                 <textarea placeholder="Paste job description" name="jd" id="jd" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} required value={jd} onChange={(e) => setJd(e.target.value)} />
                             </div>
                             <div className="flex flex-col gap-2">
                                 <label htmlFor="resume">Resume</label>
-                                <textarea
-                                    name="resume" id="resume"
-                                    placeholder="Paste your resume" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} 
-                                />
+                                <textarea name="resume" id="resume" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} required value={resume} onChange={(e) => setResume(e.target.value)} />
                             </div>
                             <div className="grid grid-cols-2 gap-2 w-full">
-                                <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer">Start</button>
+                                <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer col-span-2">Start</button>
                                 {/* <button className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer" type="button" onClick={() => setJd(exampleJD)}>
                                     Use example
                                 </button> */}
                             </div>
                     
-                            {/* {result && (
-                            <div className="flex flex-col gap-2 mt-4">
+                            {result && (
+                                <div className="flex flex-col gap-2 mt-4">
                                 <h2 className="text-2xl font-bold">Result</h2>         
                                 <div className="mt-4">
-                                {result.questions?.length > 0 && (
+                                    <h3 className="text-lg font-semibold">Match Score</h3>
+                                    <p>{result.match_score}</p>
+                                    {result.missing_skills?.length > 0 && (
                                     <>
-                                    <h3 className="text-lg font-semibold mt-4">Questions</h3>
-                                    <ul>
-                                        {result.questions?.map((s: string, i: number) => (
-                                        <li className="list-disc list-inside" key={i}>{s}</li>
+                                        <h3 className="text-lg font-semibold mt-4">Missing skills</h3>
+                                        <ul>
+                                        {result.missing_skills?.map((s: string, i: number) => (
+                                            <li className="list-disc list-inside" key={i}>{s}</li>
                                         ))}
-                                    </ul>
+                                        </ul>
                                     </>
-                                )}
+                                    )}
+
+                                    {result.interview_questions?.length > 0 && (
+                                    <>
+                                        <h3 className="text-lg font-semibold mt-4">Interview Questions</h3>
+                                        <ul>
+                                        {result.interview_questions?.map((s: string, i: number) => (
+                                            <li className="list-disc list-inside" key={i}>{s}</li>
+                                        ))}
+                                        </ul>
+                                    </>
+                                    )}
+
+                                    <button onClick={() => setShowRaw(!showRaw)} className="text-sm font-semibold mt-4 text-center text-gray-500 block w-full">Raw JSON (debug) <FontAwesomeIcon icon={faAngleDown} className={`ml-2 transition-all duration-500 ${showRaw ? "rotate-180" : ""}`}/></button>
+                                    <pre className={`whitespace-break-spaces text-sm text-gray-500 overflow-hidden transition-all duration-500 ease-in-out ${showRaw ? "h-96" : "h-0"}`}>{JSON.stringify(result, null, 2)}</pre>
                                 </div>
-                            </div>
-                            )} */}
+                                </div>
+                            )}
                         </form>
                     )}
                     {/* { stage === 1 && (
