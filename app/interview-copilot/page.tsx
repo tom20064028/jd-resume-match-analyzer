@@ -1,11 +1,14 @@
 'use client';
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
+import { connection } from 'next/server'
 
-export default function InterviewCopilotPage() {
+export default async function InterviewCopilotPage() {
+    await connection()
     const router = useRouter()
     const searchParams = useSearchParams()
     const exampleJD = `We are looking for a frontend developer with React, TypeScript, and API experience...`;
