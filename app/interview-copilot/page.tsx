@@ -1,17 +1,35 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
-import { connection } from 'next/server'
 
-export default async function InterviewCopilotPage() {
-    await connection()
+function QuestionsFromSearchParams({ onSetQuestions }: { onSetQuestions: (qs: string[]) => void }) {
+    const searchParams = useSearchParams();
+    const questionsParam = searchParams.get("questions");
+
+    useEffect(() => {
+        if (!questionsParam) {
+            onSetQuestions([]);
+            return;
+        }
+
+        try {
+            const decoded = decodeURIComponent(questionsParam);
+            const parsed = JSON.parse(decoded);
+            onSetQuestions(Array.isArray(parsed) ? parsed : []);
+        } catch {
+            onSetQuestions([]);
+        }
+    }, [questionsParam, onSetQuestions]);
+
+    return null;
+}
+
+export default function InterviewCopilotPage() {
     const router = useRouter()
-    const searchParams = useSearchParams()
-    const exampleJD = `We are looking for a frontend developer with React, TypeScript, and API experience...`;
 
     type HistoryItem = {
         question: string;
@@ -20,11 +38,12 @@ export default async function InterviewCopilotPage() {
         feedback: string;
     };
 
-    // type FinalResult = {
-    //     overall_score: number,
-    //     summary: string,
-    //     improvement: string
-    // };
+    type FinalResult = {
+        overall_score: number,
+        strengths: string[],
+        weaknesses: string[],
+        improvement_plan: string[]
+    };
 
     const [jd, setJd] = useState("")
     const [resume, setResume] = useState("")
@@ -37,12 +56,12 @@ export default async function InterviewCopilotPage() {
     const [score, setScore] = useState(0)
     const [feedback, setFeedback] = useState("")
     const [showRaw, setShowRaw] = useState(false);
-    const [questions, setQuestions] = useState([])
+    const [questions, setQuestions] = useState<string[]>([])
     const [currentIndex, setCurrentIndex] = useState(0)
     const [finish, setFinish] = useState(false)
 
     const [history, setHistory] = useState<HistoryItem[]>([])
-    // const [finalResult, setFinalResult] = useState<FinalResult>()
+    const [finalResult, setFinalResult] = useState<FinalResult | null>(null)
 
     useEffect(() => {
         const form = document.querySelector("form");
@@ -74,11 +93,6 @@ export default async function InterviewCopilotPage() {
                 setLoading(false);
             });
         });
-        const questionsParam = searchParams.get("questions")
-        if (!!questionsParam) {
-            const questions = questionsParam ? JSON.parse(decodeURIComponent(questionsParam)) : []
-            setQuestions(questions)
-        }
     }, []);
 
     const hasNext = currentIndex < questions.length - 1
@@ -138,36 +152,67 @@ export default async function InterviewCopilotPage() {
 
     const finishInterview = () => {
 
-        // fetch("/api/interview-finish", {
-        //     method: "POST",
-        //     body: JSON.stringify({ history }),
-        // }).then(res => res.json()).then(data => {
-        //     let parsed;
+        fetch("/api/interview-finish-copilot", {
+            method: "POST",
+            body: JSON.stringify({ history }),
+        }).then(res => res.json()).then(data => {
+            let parsed;
     
-        //     try {
-        //         parsed = JSON.parse(data.raw);
-        //         setFinalResult(parsed)
-        //     } catch {
-        //         parsed = {
-        //             "overall_score": 0,
-        //             "summary": "",
-        //             "improvement": ""
-        //         };
-        //     }
+            try {
+                parsed = JSON.parse(data.raw);
+                setFinalResult(parsed)
+            } catch {
+                parsed = {
+                    "overall_score": 0,
+                    "strengths": [],
+                    "weaknesses": [],
+                    "improvement_plan": []
+                };
+            }
             
-        //     setLoading(false);
-        // }).catch(err => {
-        //     console.error(err);
-        // }).finally(() => {
-        //     setLoading(false);
-        //     setStage(2)
-        // }) 
+            setLoading(false);
+        }).catch(err => {
+            console.error(err);
+        }).finally(() => {
+            setLoading(false);
+            setStage(2)
+        }) 
     }
 
+    const resetInterviewState = () => {
+        setJd("");
+        setResume("");
+
+        setResult(null);
+        setLoading(false);
+        setStage(0);
+
+        setQuestion("");
+        setAnswer("");
+        setScore(0);
+        setFeedback("");
+        setShowRaw(false);
+
+        setQuestions([]);
+        setCurrentIndex(0);
+        setFinish(false);
+
+        setHistory([]);
+        setFinalResult(null);
+    }
+
+    const restartInterview = () => {
+        resetInterviewState();
+        // Clear the `?questions=...` query so QuestionsFromSearchParams doesn't repopulate state.
+        router.replace(`/interview-copilot`)
+    }
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
             <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start relative">
+                <Suspense fallback={null}>
+                    <QuestionsFromSearchParams onSetQuestions={setQuestions} />
+                </Suspense>
                 <a href="/" className="absolute top-12">
                     ← Back to Toolkit
                 </a>
@@ -233,7 +278,7 @@ export default async function InterviewCopilotPage() {
                             )}
                         </form>
                     )}
-                    { questions.length !== 0 && (
+                    { questions.length !== 0 && !finalResult && (
                         <>
                             <div id="last-question">
                                 { !!score && 
@@ -263,12 +308,12 @@ export default async function InterviewCopilotPage() {
                                 
                                 { hasNext ? 
                                     <button type="button" onClick={() => submitAnswer()} className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer">Answer</button> : 
-                                    <button type="button" onClick={() => submitAnswer()} className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer">Finish Interview</button>
+                                    <button type="button" onClick={() => finishInterview()} className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer">Finish Interview</button>
                                 }
                             </form>
                         </>
                     )}
-                    {/* { stage === 2 && (
+                    { !!finalResult && (
                         <div>
                             <h2 className="text-2xl font-bold">Interview End!</h2> 
                             <h3 className="text-lg font-semibold underline mt-8">Your Result:</h3>
@@ -278,23 +323,41 @@ export default async function InterviewCopilotPage() {
                                     <p>{finalResult?.overall_score}</p>
                                 </div>
                             }
-                            { !!finalResult?.summary && 
-                                <div className="mt-4">
-                                    <h3 className="text-lg font-semibold">Summary</h3>
-                                    <p>{finalResult?.summary}</p>
-                                </div>
-                            }
-                            { !!finalResult?.improvement&& 
-                                <div className="mt-4">
-                                    <h3 className="text-lg font-semibold">Improvement</h3>
-                                    <p>{finalResult?.improvement}</p>
-                                </div>
-                            }
-                            <button className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer mt-8" type="button" onClick={() => setStage(0)}>
+                            {finalResult.strengths?.length > 0 && (
+                                <>
+                                <h3 className="text-lg font-semibold mt-4">Strengths</h3>
+                                <ul>
+                                    {finalResult.strengths?.map((s: string, i: number) => (
+                                    <li className="list-disc list-inside" key={i}>{s}</li>
+                                    ))}
+                                </ul>
+                                </>
+                            )}
+                            {finalResult.weaknesses?.length > 0 && (
+                                <>
+                                <h3 className="text-lg font-semibold mt-4">Weaknesses</h3>
+                                <ul>
+                                    {finalResult.weaknesses?.map((s: string, i: number) => (
+                                    <li className="list-disc list-inside" key={i}>{s}</li>
+                                    ))}
+                                </ul>
+                                </>
+                            )}
+                            {finalResult.improvement_plan?.length > 0 && (
+                                <>
+                                <h3 className="text-lg font-semibold mt-4">Improvement Plan</h3>
+                                <ul>
+                                    {finalResult.improvement_plan?.map((s: string, i: number) => (
+                                    <li className="list-disc list-inside" key={i}>{s}</li>
+                                    ))}
+                                </ul>
+                                </>
+                            )}
+                            <button className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer mt-8" type="button" onClick={restartInterview}>
                                 Back to Home
                             </button>
                         </div>
-                    )} */}
+                    )}
                 </div>
             </main>
         </div>
