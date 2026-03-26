@@ -213,9 +213,6 @@ export default function InterviewCopilotPage() {
                 <Suspense fallback={null}>
                     <QuestionsFromSearchParams onSetQuestions={setQuestions} />
                 </Suspense>
-                <a href="/" className="absolute top-12">
-                    ← Back to Toolkit
-                </a>
                 <div className="flex flex-col gap-4 w-full">
                     <div className="flex flex-col gap-2">
                         <h1 className="text-4xl font-bold">AI Interview Copilot</h1>

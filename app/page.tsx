@@ -1,11 +1,5 @@
 'use client';
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
-
-
 export default function Home() {
 
   return (
@@ -21,7 +15,22 @@ export default function Home() {
             </p>
 
             <h3 className="text-2xl font-bold mt-4">
-                Tools
+              About this project
+            </h3>
+            <p className="text-lg text-gray-500">
+              AI Career Toolkit is a collection of AI-powered developer tools built with Next.js and LLM APIs.<br/>The goal is to explore how AI can assist developers in preparing for technical intervi
+            </p>
+
+            <h3 className="text-2xl font-bold mt-4">Interview Copilot</h3>
+            <p className="text-lg text-gray-500">End-to-end interview preparation</p>
+            <div className="flex justify-center">
+              <a href="/interview-copilot" className="px-8 py-2 mt-4 rounded-md cursor-pointer text-center bg-blue-500 text-white inline-block">
+                Start here
+              </a>
+            </div>
+            
+            <h3 className="text-2xl font-bold mt-4">
+              Explore Individual Tools
             </h3>
             <div className="grid grid-cols-3 gap-3 mt-2">
               <a href="/jd-resume-analyzer" className="card">
@@ -35,19 +44,37 @@ export default function Home() {
                   Receive feedback, follow-up questions, and a final evaluation.
                 </div>
               </a>
-              <a className="card">
-              <h4 className="text-xl font-bold">Coding Interview Judge</h4>
-                <div className="mt-4">Evaluate coding interview answers using AI reasoning.<br /><br />
-                🚧 Coming soon</div>
+              <a href="/conding-interview"  className="card">
+                <h4 className="text-xl font-bold">Coding Interview Judge</h4>
+                <div className="mt-4">
+                  Evaluate coding answers using AI.<br /><br />
+
+                  👉 Use Example to try<br /><br />
+
+                  (Prototype)
+                </div>
               </a>
             </div>
 
             <h3 className="text-2xl font-bold mt-4">
-              About this project
+              How to Try
             </h3>
-            <p className="text-lg text-gray-500 mt-2">
-              AI Career Toolkit is a collection of AI-powered developer tools built with Next.js and LLM APIs.<br/>The goal is to explore how AI can assist developers in preparing for technical intervi
-            </p>
+            <ol className="text-lg text-gray-500 mt-2 list-decimal pl-6">
+              <li>
+                Go to Interview Copilot  
+              </li>
+              <li>
+                Paste a job description and resume  
+              </li>
+              <li>
+                Start interview preparation  
+              </li>
+              <li>
+                Try the interview simulator  
+              </li>
+            </ol>
+
+            
           </div>
         </div>
       </main>
