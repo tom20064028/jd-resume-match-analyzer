@@ -35,22 +35,26 @@ export default function Home() {
                 is to explore how AI can assist developers in preparing for technical interviews.
               </p>
             </div>
+            <div>
+              <div className="rounded-2xl border border-blue-200 bg-linear-to-r from-blue-50 to-indigo-50 p-5 dark:border-blue-900/60 dark:from-blue-950/40 dark:to-indigo-950/40">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="text-xl font-semibold">Interview Copilot</h3>
+                    <p className="mt-1 text-gray-700 dark:text-gray-300">
+                      End-to-end interview preparation.
+                    </p>
+                  </div>
 
-            <div className="rounded-2xl border border-blue-200 bg-linear-to-r from-blue-50 to-indigo-50 p-5 dark:border-blue-900/60 dark:from-blue-950/40 dark:to-indigo-950/40">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold">Interview Copilot</h3>
-                  <p className="mt-1 text-gray-700 dark:text-gray-300">
-                    End-to-end interview preparation.
-                  </p>
+                  <a
+                    href="/interview-copilot"
+                    className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:hover:bg-blue-500"
+                  >
+                    Start here
+                  </a>
                 </div>
-
-                <a
-                  href="/interview-copilot"
-                  className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:hover:bg-blue-500"
-                >
-                  Start here
-                </a>
+              </div>
+              <div className="flex w-full justify-end text-sm text-gray-400 gap-4 mt-4 px-5">
+                <a href="/report">View Last Report</a>
               </div>
             </div>
           </div>

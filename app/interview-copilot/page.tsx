@@ -161,6 +161,7 @@ export default function InterviewCopilotPage() {
             try {
                 parsed = JSON.parse(data.raw);
                 setFinalResult(parsed)
+                
             } catch {
                 parsed = {
                     "overall_score": 0,
@@ -169,42 +170,17 @@ export default function InterviewCopilotPage() {
                     "improvement_plan": []
                 };
             }
-            
+            localStorage.setItem(
+                "lastReport",
+                JSON.stringify(parsed)
+            )
+            router.push("/report")
             setLoading(false);
         }).catch(err => {
             console.error(err);
         }).finally(() => {
             setLoading(false);
-            setStage(2)
         }) 
-    }
-
-    const resetInterviewState = () => {
-        setJd("");
-        setResume("");
-
-        setResult(null);
-        setLoading(false);
-        setStage(0);
-
-        setQuestion("");
-        setAnswer("");
-        setScore(0);
-        setFeedback("");
-        setShowRaw(false);
-
-        setQuestions([]);
-        setCurrentIndex(0);
-        setFinish(false);
-
-        setHistory([]);
-        setFinalResult(null);
-    }
-
-    const restartInterview = () => {
-        resetInterviewState();
-        // Clear the `?questions=...` query so QuestionsFromSearchParams doesn't repopulate state.
-        router.replace(`/interview-copilot`)
     }
 
     return (
@@ -310,51 +286,7 @@ export default function InterviewCopilotPage() {
                             </form>
                         </>
                     )}
-                    { !!finalResult && (
-                        <div>
-                            <h2 className="text-2xl font-bold">Interview End!</h2> 
-                            <h3 className="text-lg font-semibold underline mt-8">Your Result:</h3>
-                            { !!finalResult?.overall_score && 
-                                <div className="mt-4">
-                                    <h3 className="text-lg font-semibold">Score</h3>
-                                    <p>{finalResult?.overall_score}</p>
-                                </div>
-                            }
-                            {finalResult.strengths?.length > 0 && (
-                                <>
-                                <h3 className="text-lg font-semibold mt-4">Strengths</h3>
-                                <ul>
-                                    {finalResult.strengths?.map((s: string, i: number) => (
-                                    <li className="list-disc list-inside" key={i}>{s}</li>
-                                    ))}
-                                </ul>
-                                </>
-                            )}
-                            {finalResult.weaknesses?.length > 0 && (
-                                <>
-                                <h3 className="text-lg font-semibold mt-4">Weaknesses</h3>
-                                <ul>
-                                    {finalResult.weaknesses?.map((s: string, i: number) => (
-                                    <li className="list-disc list-inside" key={i}>{s}</li>
-                                    ))}
-                                </ul>
-                                </>
-                            )}
-                            {finalResult.improvement_plan?.length > 0 && (
-                                <>
-                                <h3 className="text-lg font-semibold mt-4">Improvement Plan</h3>
-                                <ul>
-                                    {finalResult.improvement_plan?.map((s: string, i: number) => (
-                                    <li className="list-disc list-inside" key={i}>{s}</li>
-                                    ))}
-                                </ul>
-                                </>
-                            )}
-                            <button className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer mt-8" type="button" onClick={restartInterview}>
-                                Back to Home
-                            </button>
-                        </div>
-                    )}
+                    
                 </div>
             </main>
         </div>
