@@ -6,24 +6,41 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
-function QuestionsFromSearchParams({ onSetQuestions }: { onSetQuestions: (qs: string[]) => void }) {
+function QuestionsFromSearchParams({ onSetCurrentQuestion, onSetMissingSkills }: { onSetCurrentQuestion: (qs: string) => void, onSetMissingSkills: (qs: string[]) => void }) {
     const searchParams = useSearchParams();
-    const questionsParam = searchParams.get("questions");
+    const questionParam = searchParams.get("firstQuestion");
+    const skillsParam = searchParams.get("skills")
 
     useEffect(() => {
-        if (!questionsParam) {
-            onSetQuestions([]);
+        if (!questionParam) {
+            onSetCurrentQuestion("");
             return;
         }
 
         try {
-            const decoded = decodeURIComponent(questionsParam);
+            const decoded = decodeURIComponent(questionParam);
             const parsed = JSON.parse(decoded);
-            onSetQuestions(Array.isArray(parsed) ? parsed : []);
+            onSetCurrentQuestion(parsed);
         } catch {
-            onSetQuestions([]);
+            onSetCurrentQuestion("");
         }
-    }, [questionsParam, onSetQuestions]);
+    }, [questionParam, onSetCurrentQuestion]);
+
+    useEffect(() => {
+
+        if (!skillsParam) {
+            onSetMissingSkills([]);
+            return;
+        }
+
+        try {
+            const decodedMissingSkills = decodeURIComponent(skillsParam);
+            const parsedMissingSkills = JSON.parse(decodedMissingSkills);
+            onSetMissingSkills(Array.isArray(parsedMissingSkills) ? parsedMissingSkills : []);
+        } catch {
+            onSetMissingSkills([]);
+        }
+    }, [skillsParam, onSetMissingSkills]);
 
     return null;
 }
@@ -50,15 +67,14 @@ export default function InterviewCopilotPage() {
 
     const [result, setResult] = useState<any>(null)
     const [loading, setLoading] = useState(false);
-    const [stage, setStage] = useState(0)
-    const [question, setQuestion] = useState("")
     const [answer, setAnswer] = useState("")
     const [score, setScore] = useState(0)
     const [feedback, setFeedback] = useState("")
     const [showRaw, setShowRaw] = useState(false);
-    const [questions, setQuestions] = useState<string[]>([])
-    const [currentIndex, setCurrentIndex] = useState(0)
     const [finish, setFinish] = useState(false)
+
+    const [currentQuestion, setCurrentQuestion] = useState<string>("")
+    const [missing_skills, setMissingSkill] = useState<string[]>([])
 
     const [history, setHistory] = useState<HistoryItem[]>([])
     const [finalResult, setFinalResult] = useState<FinalResult | null>(null)
@@ -95,11 +111,12 @@ export default function InterviewCopilotPage() {
         });
     }, []);
 
-    const hasNext = currentIndex < questions.length - 1
+    const hasNext = history.length < 5
 
     const interviewStart = () => {
-        const questionsParam = encodeURIComponent(JSON.stringify(result.interview_questions))
-        router.push(`/interview-copilot?questions=${questionsParam}`)
+        const questionParam = encodeURIComponent(JSON.stringify(result.interview_questions[0]))
+        const skillsParam = encodeURIComponent(JSON.stringify(result.missing_skills))
+        router.push(`/interview-copilot?firstQuestion=${questionParam}&skills=${skillsParam}`)
     }
 
     const submitAnswer = () => {
@@ -109,7 +126,7 @@ export default function InterviewCopilotPage() {
         const answer = formData.get("answer");
         fetch("/api/interview-turn", {
             method: "POST",
-            body: JSON.stringify({ question: questions[currentIndex], answer, history }),
+            body: JSON.stringify({ question: currentQuestion, answer, history, missing_skills }),
         }).then(res => res.json()).then(data => {
             let parsed;
     
@@ -125,7 +142,7 @@ export default function InterviewCopilotPage() {
             setHistory(prev => [
                 ...prev,
                 {
-                    question,
+                    question: currentQuestion,
                     answer: String(answer ?? ""),
                     score: parsed.score,
                     feedback: parsed.feedback,
@@ -133,9 +150,8 @@ export default function InterviewCopilotPage() {
             ])
             setScore(parsed.score)
             setFeedback(parsed.feedback)
-            // setQuestion(parsed.next_question);
             if (hasNext) {
-                setCurrentIndex(currentIndex + 1)
+                setCurrentQuestion(parsed.next_question)
             } else {
                 setFinish(true)
             }
@@ -161,7 +177,6 @@ export default function InterviewCopilotPage() {
             try {
                 parsed = JSON.parse(data.raw);
                 setFinalResult(parsed)
-                
             } catch {
                 parsed = {
                     "overall_score": 0,
@@ -187,7 +202,7 @@ export default function InterviewCopilotPage() {
         <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
             <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start relative">
                 <Suspense fallback={null}>
-                    <QuestionsFromSearchParams onSetQuestions={setQuestions} />
+                    <QuestionsFromSearchParams onSetCurrentQuestion={setCurrentQuestion} onSetMissingSkills={setMissingSkill}/>
                 </Suspense>
                 <div className="flex flex-col gap-4 w-full">
                     <div className="flex flex-col gap-2">
@@ -196,7 +211,7 @@ export default function InterviewCopilotPage() {
                             Pratise your interview.
                         </p>
                     </div>
-                    { questions.length === 0 && (
+                    { !currentQuestion && (
                         <form className="flex flex-col gap-4">
                             <div className="flex flex-col gap-2">
                                 <label htmlFor="jd">JD</label>
@@ -251,7 +266,7 @@ export default function InterviewCopilotPage() {
                             )}
                         </form>
                     )}
-                    { questions.length !== 0 && !finalResult && (
+                    { currentQuestion && !finalResult && (
                         <>
                             <div id="last-question">
                                 { !!score && 
@@ -271,7 +286,7 @@ export default function InterviewCopilotPage() {
                             <form id="interview-form" className="flex flex-col gap-4">
                                 {!finish && (
                                     <>
-                                        <h2 className="text-xl mt-8">{questions[currentIndex]}</h2>
+                                        <h2 className="text-xl mt-8">{currentQuestion}</h2>
                                         <div className="flex flex-col gap-2 mt-8">
                                             <label htmlFor="answer">Answer</label>
                                             <textarea placeholder="Input your answer" name="answer" id="answer" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} required value={answer} onChange={(e) => setAnswer(e.target.value)} />

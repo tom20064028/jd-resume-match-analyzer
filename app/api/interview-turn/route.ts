@@ -13,16 +13,16 @@ const client = new OpenAI({
 
 export async function POST(req: Request) {
   try {
-    const { question, answer, history } = await req.json();
+    const { question, answer, history, missing_skills } = await req.json();
 
     const completion = await client.chat.completions.create({
       model: "openai/gpt-4o-mini", // 例子：你可換其他 OpenRouter model
       messages: [
-        { role: "system", content: 'You are conducting a technical interview.\n\nEvaluate the candidate\'s answer.\n\nReturn ONLY JSON:\n\n{\n"score": number,\n"feedback": string,\n"next_question": string\n}\n\nScore should be between 1 and 10.Avoid repeating previous questions.' },
+        { role: "system", content: `You are a senior technical interviewer.\n\nYou are conducting a dynamic interview.\n\nGoals:\n- Evaluate the candidate\'s answer\n- Identify strengths and weaknesses\n- Ask a relevant follow-up question\n- Focus more on the candidate\'s missing skills\n\nImportant:\n- Avoid repeating previous questions\n- Ask deeper or related follow-up questions\n- If the candidate is weak, simplify or probe fundamentals\n- If the candidate is strong, increase difficulty\n\nFocus on these missing skills:\n${missing_skills}\n\nReturn ONLY JSON:\n\n{\n"score": number,\n"feedback": string,\n"next_question": string\n}\n\nScore should be between 1 and 10.\n\nKeep feedback concise (max 2 sentences).` },
         {
           role: "user",
           content:
-            `Interview history:\n\n${history}\n\nInterview Question:\n${question}\n\nCandidate Answer:\n${answer}`
+            `Interview History:\n${history}\n\nCurrent Question:\n${question}\n\nCandidate Answer:\n${answer}`
         },
       ],
       temperature: 0.2,
