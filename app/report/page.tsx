@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 export default function ReportPage() {
     type FinalResult = {
         overall_score: number;
+        summary: string;
         strengths: string[];
         weaknesses: string[];
         improvement_plan: string[];
@@ -55,6 +56,12 @@ export default function ReportPage() {
                                     <p>{finalResult?.overall_score}</p>
                                 </div>
                             }
+                            { !!finalResult?.summary && 
+                                <div className="mt-4">
+                                    <h3 className="text-lg font-semibold">Summary</h3>
+                                    <p>{finalResult?.summary}</p>
+                                </div>
+                            }
                             {finalResult.strengths.length > 0 && (
                                 <>
                                 <h3 className="text-lg font-semibold mt-4">Strengths</h3>
@@ -77,12 +84,12 @@ export default function ReportPage() {
                             )}
                             {finalResult.improvement_plan.length > 0 && (
                                 <>
-                                    <h3 className="text-lg font-semibold mt-4">Improvement Plan</h3>
-                                    <ul>
+                                    <h3 className="text-lg font-semibold mt-4">Next steps:</h3>
+                                    <ol>
                                         {finalResult.improvement_plan.map((s: string, i: number) => (
-                                        <li className="list-disc list-inside" key={i}>{s}</li>
+                                        <li className="list-decimal list-inside" key={i}>{s}</li>
                                         ))}
-                                    </ul>
+                                    </ol>
                                 </>
                             )}
                             {history.length > 0 && (

@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     const completion = await client.chat.completions.create({
       model: "openai/gpt-4o-mini", // 例子：你可換其他 OpenRouter model
       messages: [
-        { role: "system", content: 'You are a senior technical interviewer.\n\nEvaluate the overall performance of the candidate based on the interview history.\n\nReturn ONLY JSON:\n{\n"overall_score": number,\n"strengths": string[],\n"weaknesses": string[],\n"improvement_plan": string[]\n}\n\noverall_score should be between 1 and 10.\nKeep each item short (max 1 sentence).' },
+        { role: "system", content: 'Evaluate the candidate\'s performance based on the interview history.\n\nIdentify:\n- strengths\n- weaknesses\n- actionable next steps for improvement\n\nThe next steps should be specific and practical.\n\nReturn ONLY JSON:\n\n{\n"overall_score": number,\n"summary": string,\n"strengths": string[],\n"weaknesses": string[],\n"improvement_plan": string[]\n}\n\nScore should be between 1 and 10.\n\nKeep all text concise.Make each improvement step:\n- specific\n- actionable\n- measurable (if possible)' },
         {
           role: "user",
           content:

@@ -40,6 +40,7 @@ export default function InterviewCopilotPage() {
 
     type FinalResult = {
         overall_score: number,
+        summary: string,
         strengths: string[],
         weaknesses: string[],
         improvement_plan: string[]
@@ -50,7 +51,6 @@ export default function InterviewCopilotPage() {
 
     const [result, setResult] = useState<any>(null)
     const [loading, setLoading] = useState(false);
-    const [stage, setStage] = useState(0)
     const [question, setQuestion] = useState("")
     const [answer, setAnswer] = useState("")
     const [score, setScore] = useState(0)
@@ -165,6 +165,7 @@ export default function InterviewCopilotPage() {
             } catch {
                 parsed = {
                     "overall_score": 0,
+                    "summary": "",
                     "strengths": [],
                     "weaknesses": [],
                     "improvement_plan": []
