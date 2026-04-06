@@ -117,12 +117,14 @@ export default function ReportPage() {
                                     </ul>
                                 </>
                             )}
-                            <button className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer mt-8" type="button" onClick={restartInterview}>
-                                Try Another Interview
-                            </button>
-                            <button className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer mt-8" type="button" onClick={restartInterviewWithFocus}>
-                                Practice Again (Focus on Weak Areas)
-                            </button>
+                            <div className="flex flex-col">
+                                <button className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer mt-8" type="button" onClick={restartInterview}>
+                                    Try Another Interview
+                                </button>
+                                <button className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer mt-8" type="button" onClick={restartInterviewWithFocus}>
+                                    Practice Again (Focus on Weak Areas)
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <div>
