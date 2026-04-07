@@ -20,6 +20,21 @@ export default function ReportPage() {
     const [finalResult, setFinalResult] = useState<FinalResult | null>(null);
     const [history, setHistory] = useState<FinalResult[]>([]);
 
+    const scores = history.map(h => h.overall_score)
+    const avg = scores.reduce((a,b) => a+b, 0) / scores.length
+    const best = Math.max(...scores)
+    const total = scores.length
+
+    const weakMap: Record<string, number> = {}
+
+    history.forEach(report => {
+        report.weaknesses.forEach(w => {
+            weakMap[w.topic] = (weakMap[w.topic] || 0) + 1
+        })
+    })
+
+    console.log(weakMap)
+
     useEffect(() => {
         const historyStorage = localStorage.getItem("history");
         // const raw = localStorage.getItem("lastReport");
@@ -31,7 +46,7 @@ export default function ReportPage() {
             // This is client-only state initialization from `localStorage`.
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setFinalResult(parsed[parsed.length - 1]);
-            setHistory(parsed.slice(0, -1));
+            setHistory(parsed);
         } catch (err) {
             console.error("Failed to parse lastReport from localStorage:", err);
         }
@@ -109,12 +124,18 @@ export default function ReportPage() {
                             )}
                             {history.length > 0 && (
                                 <>
-                                    <h3 className="text-lg font-semibold mt-4">Previous Attempts</h3>
-                                    <ul>
+                                    <h3 className="text-lg font-semibold underline mt-4">Progress Summary</h3>
+                                    <p>Previous Score:</p>
+                                    <div className="flex">
                                         {history.map((item, key) => (
-                                            <li className="list-disc list-inside" key={key}> Score: {item.overall_score}</li>
+                                            <div key={key}>&nbsp;{item.overall_score} { key !== history.length - 1 && "→"} </div>
                                         ))}
-                                    </ul>
+                                    </div>
+                                    <br />
+                                    <p>Average Score: {avg}</p>
+                                    <p>Best Score: {best}</p>
+                                    <p>Total Interviews: {total}</p>
+                                    {/* <p>Most Frequent Weak Area: {}</p> */}
                                 </>
                             )}
                             <div className="flex flex-col">
