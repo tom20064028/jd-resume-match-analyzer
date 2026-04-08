@@ -13,12 +13,12 @@ const client = new OpenAI({
 
 export async function POST(req: Request) {
   try {
-    const { question, answer, history, focusAreas, currentFocus } = await req.json();
+    const { question, answer, history, focusAreas, currentFocus, difficulty } = await req.json();
 
     const completion = await client.chat.completions.create({
       model: "openai/gpt-4o-mini", // 例子：你可換其他 OpenRouter model
       messages: [
-        { role: "system", content: `You are a senior technical interviewer conducting a dynamic interview.\n\nFocus areas for this interview:\n${focusAreas.join(", ")}\n\nThe current focus area is:\n${currentFocus}\n\nInstructions:\n- Evaluate the candidate's answer\n- Provide concise feedback\n- Ask a follow-up question related to the current focus area\n- Usually stay within the same focus area\n- Only move to another focus area if the candidate shows strong understanding or the topic is sufficiently explored\n- Avoid repeating previous questions\n- Adjust difficulty based on candidate performance\n\nReturn ONLY JSON:\n\n{\n  "score": number,\n  "feedback": string,\n  "next_question": string,\n  "next_focus": string\n}\n\n"next_focus" must be one of the focus areas.` },
+        { role: "system", content: `You are a senior technical interviewer conducting a dynamic interview.\n\nFocus areas for this interview:\n${focusAreas.join(", ")}\n\nThe current focus area is:\n${currentFocus}\n\nInstructions:\n- Evaluate the candidate's answer\n- Provide concise feedback\n- Ask a follow-up question related to the current focus area\n- Usually stay within the same focus area\n- Only move to another focus area if the candidate shows strong understanding or the topic is sufficiently explored\n- Avoid repeating previous questions\n- Adjust difficulty based on candidate performance\n\nAdjust question difficulty based on this level:\n${difficulty}\n\n- easy: ask fundamental or basic questions\n- medium: ask standard interview-level questions\n- hard: ask deeper, edge cases, or system-level questions\n\nReturn ONLY JSON:\n\n{\n  "score": number,\n  "feedback": string,\n  "next_question": string,\n  "next_focus": string\n}\n\n"next_focus" must be one of the focus areas.` },
         {
           role: "user",
           content:

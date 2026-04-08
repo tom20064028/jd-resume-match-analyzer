@@ -86,6 +86,9 @@ export default function InterviewCopilotPage() {
         finalResult: null
     })
 
+    const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium")
+    const [previousDifficulty, setPreviousDifficulty] = useState<"easy" | "medium" | "hard" | "">("")
+    const difficultyLevel = ["easy", "medium", "hard"]
     
     const latestTurn = session.history[session.history.length - 1]
 
@@ -135,7 +138,7 @@ export default function InterviewCopilotPage() {
         const answer = formData.get("answer");
         fetch("/api/interview-turn", {
             method: "POST",
-            body: JSON.stringify({ question: session.questions[session.currentIndex], answer, history: session.history, focusAreas: session.focusAreas.length > 0 ? session.focusAreas : result.missing_skills, currentFocus: session.currentFocus }),
+            body: JSON.stringify({ question: session.questions[session.currentIndex], answer, history: session.history, focusAreas: session.focusAreas.length > 0 ? session.focusAreas : result.missing_skills, currentFocus: session.currentFocus, difficulty: difficulty }),
         }).then(res => res.json()).then(data => {
             let parsed;
     
@@ -167,6 +170,14 @@ export default function InterviewCopilotPage() {
                     ...(!hasNext && {finished: true}),
                 }
             })
+            setPreviousDifficulty(difficulty)
+            if (parsed.score <= 4) {
+                setDifficulty("easy")
+            } else if (parsed.score >= 8) {
+                setDifficulty("hard")
+            } else {
+                setDifficulty("medium")
+            }
             setLoading(false);
         }).catch(err => {
             console.error(err);
@@ -296,19 +307,24 @@ export default function InterviewCopilotPage() {
                                 {session.finished ? (
                                     <button type="button" onClick={() => finishInterview()} className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer">Finish Interview</button>
                                 ) : (
-                                    <>
-                                        <h2 className="text-xl mt-8">{session.questions[session.currentIndex]}</h2>
+                                    <div className="flex flex-col gap-2 mt-8">
+                                        <div className="text-sm text-gray-500 self-end">
+                                            Difficulty: 
+                                            {!!previousDifficulty && previousDifficulty !== difficulty ? previousDifficulty + " → " : ""} 
+                                            {difficulty} 
+                                            {!!previousDifficulty ? (difficultyLevel.indexOf(difficulty) > difficultyLevel.indexOf(previousDifficulty) ? "↑" : difficultyLevel.indexOf(difficulty) < difficultyLevel.indexOf(previousDifficulty) ? "↓" : "") : ""}
+                                        </div>
+                                        <h2 className="text-xl">{session.questions[session.currentIndex]}</h2>
                                         <div className="flex flex-col gap-2 mt-8">
                                             <label htmlFor="answer">Answer</label>
                                             <textarea placeholder="Input your answer" name="answer" id="answer" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} required value={answer} onChange={(e) => setAnswer(e.target.value)} />
                                         </div>
                                         <button type="button" onClick={() => submitAnswer()} className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer">Answer</button>
-                                    </>
+                                    </div>
                                 )}
                             </form>
                         </>
                     )}
-                    
                 </div>
             </main>
         </div>
