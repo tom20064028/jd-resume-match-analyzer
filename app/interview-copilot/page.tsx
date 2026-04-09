@@ -61,7 +61,7 @@ export default function InterviewCopilotPage() {
         currentQuestion: string
         questionCount: number
         history: HistoryItem[]
-        // started: boolean
+        started: boolean
         finished: boolean
         finalResult: FinalResult | null
     }
@@ -82,6 +82,7 @@ export default function InterviewCopilotPage() {
         currentQuestion: "",
         questionCount: 0,
         history: [],
+        started: false,
         finished: false,
         finalResult: null
     })
@@ -89,6 +90,8 @@ export default function InterviewCopilotPage() {
     const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium")
     const [previousDifficulty, setPreviousDifficulty] = useState<"easy" | "medium" | "hard" | "">("")
     const difficultyLevel = ["easy", "medium", "hard"]
+    const maxQuestionOptions = [3, 5, 8]
+    const [maxQuestion, setMaxQuestion] = useState(maxQuestionOptions[1])
     
     const latestTurn = session.history[session.history.length - 1]
 
@@ -127,7 +130,10 @@ export default function InterviewCopilotPage() {
         setSession(prev => ({
             ...prev,
             questions: result.interview_questions,
-            currentFocus: prev.focusAreas.length > 1 ? prev.focusAreas[0] : ""
+            currentQuestion: result.interview_questions[0],
+            questionCount: 1,
+            currentFocus: prev.focusAreas.length > 1 ? prev.focusAreas[0] : "",
+            started: true
         }))
     }
 
@@ -138,7 +144,7 @@ export default function InterviewCopilotPage() {
         const answer = formData.get("answer");
         fetch("/api/interview-turn", {
             method: "POST",
-            body: JSON.stringify({ question: session.questions[session.currentIndex], answer, history: session.history, focusAreas: session.focusAreas.length > 0 ? session.focusAreas : result.missing_skills, currentFocus: session.currentFocus, difficulty: difficulty }),
+            body: JSON.stringify({ question: session.currentQuestion, answer, history: session.history, focusAreas: session.focusAreas.length > 0 ? session.focusAreas : result.missing_skills, currentFocus: session.currentFocus, difficulty: difficulty }),
         }).then(res => res.json()).then(data => {
             let parsed;
     
@@ -153,20 +159,20 @@ export default function InterviewCopilotPage() {
                 };
             }
             setSession(prev => {
-                const hasNext = session.currentIndex < session.questions.length - 1
+                const hasNext = prev.questionCount < maxQuestion
                 return {
                     ...prev,
                     currentFocus: parsed.next_focus,
                     history: [
                         ...prev.history,
                         {
-                            question: prev.questions[prev.currentIndex],
+                            question: prev.currentQuestion,
                             answer: String(answer ?? ""),
                             score: parsed.score,
                             feedback: parsed.feedback,
                         }
                     ],
-                    ...(hasNext && {currentIndex: prev.currentIndex + 1}),
+                    ...(hasNext && {questionCount: prev.questionCount + 1, currentQuestion: parsed.next_question}),
                     ...(!hasNext && {finished: true}),
                 }
             })
@@ -244,7 +250,7 @@ export default function InterviewCopilotPage() {
                             Pratise your interview.
                         </p>
                     </div>
-                    { session.questions.length === 0 && (
+                    { !session.started && (
                         <form className="flex flex-col gap-4">
                             <div className="flex flex-col gap-2">
                                 <label htmlFor="jd">JD</label>
@@ -278,15 +284,23 @@ export default function InterviewCopilotPage() {
                                             </>
                                         )}
 
-                                        <button onClick={() => setShowRaw(!showRaw)} className="text-sm font-semibold mt-4 text-center text-gray-500 block w-full">Raw JSON (debug) <FontAwesomeIcon icon={faAngleDown} className={`ml-2 transition-all duration-500 ${showRaw ? "rotate-180" : ""}`}/></button>
+                                        <button type="button" onClick={() => setShowRaw(!showRaw)} className="text-sm font-semibold mt-4 text-center text-gray-500 block w-full">Raw JSON (debug) <FontAwesomeIcon icon={faAngleDown} className={`ml-2 transition-all duration-500 ${showRaw ? "rotate-180" : ""}`}/></button>
                                         <pre className={`whitespace-break-spaces text-sm text-gray-500 overflow-hidden transition-all duration-500 ease-in-out ${showRaw ? "h-96" : "h-0"}`}>{JSON.stringify(result, null, 2)}</pre>
+                                    </div>
+                                    <div className="self-end">
+                                        <label htmlFor="maxQuestion" className="mr-4">Interview length</label>
+                                        <select name="maxQuestion" id="maxQuestion" value={maxQuestion} onChange={(e) => setMaxQuestion(parseInt(e.target.value))} className="border-2 border-gray-300 rounded-md py-2 px-4">
+                                            {maxQuestionOptions.map((option, index) => (
+                                                <option key={index} value={option}>{option}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                     <button type="button" onClick={interviewStart} className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer col-span-2">Start Interview</button>
                                 </div>
                             )}
                         </form>
                     )}
-                    { session.questions.length !== 0 && !session.finalResult && (
+                    { session.started && !session.finalResult && (
                         <>
                             <div id="last-question">
                                 { !!latestTurn?.score && 
@@ -309,12 +323,21 @@ export default function InterviewCopilotPage() {
                                 ) : (
                                     <div className="flex flex-col gap-2 mt-8">
                                         <div className="text-sm text-gray-500 self-end">
-                                            Difficulty: 
-                                            {!!previousDifficulty && previousDifficulty !== difficulty ? previousDifficulty + " → " : ""} 
-                                            {difficulty} 
-                                            {!!previousDifficulty ? (difficultyLevel.indexOf(difficulty) > difficultyLevel.indexOf(previousDifficulty) ? "↑" : difficultyLevel.indexOf(difficulty) < difficultyLevel.indexOf(previousDifficulty) ? "↓" : "") : ""}
+                                            Question {session.questionCount} of {maxQuestion}
                                         </div>
-                                        <h2 className="text-xl">{session.questions[session.currentIndex]}</h2>
+                                        <div className="text-sm text-gray-500 self-end">
+                                            <div className="inline-block mr-2">Difficulty: </div>
+                                            {!!previousDifficulty && previousDifficulty !== difficulty ? previousDifficulty + " → " : ""} 
+                                            <div className="inline-block mr-2">{difficulty}</div>
+                                            {!!previousDifficulty ? 
+                                                (difficultyLevel.indexOf(difficulty) > difficultyLevel.indexOf(previousDifficulty) ?
+                                                    "↑" : 
+                                                    difficultyLevel.indexOf(difficulty) < difficultyLevel.indexOf(previousDifficulty) ? 
+                                                        "↓" : ""
+                                                ) : ""
+                                            }
+                                        </div>
+                                        <h2 className="text-xl">{session.currentQuestion}</h2>
                                         <div className="flex flex-col gap-2 mt-8">
                                             <label htmlFor="answer">Answer</label>
                                             <textarea placeholder="Input your answer" name="answer" id="answer" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} required value={answer} onChange={(e) => setAnswer(e.target.value)} />
