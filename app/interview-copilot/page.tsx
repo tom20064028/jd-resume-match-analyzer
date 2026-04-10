@@ -31,6 +31,10 @@ function QuestionsFromSearchParams({ onSetFocus, focusAreas }: { onSetFocus: (qs
 }
 
 export default function InterviewCopilotPage() {
+
+    const difficultyLevel = ["easy", "medium", "hard"]
+    const maxQuestionOptions = [3, 5, 8]
+
     const router = useRouter()
     
     type HistoryItem = {
@@ -56,14 +60,15 @@ export default function InterviewCopilotPage() {
     type InterviewSession = {
         focusAreas: string[]
         currentFocus: string
-        questions: string[]
-        currentIndex: number
         currentQuestion: string
         questionCount: number
         history: HistoryItem[]
         started: boolean
         finished: boolean
-        finalResult: FinalResult | null
+        finalResult: FinalResult | null,
+        difficulty: "easy" | "medium" | "hard"
+        previousDifficulty: "easy" | "medium" | "hard" | "",
+        maxQuestion: number
     }
 
     const [jd, setJd] = useState("")
@@ -77,21 +82,16 @@ export default function InterviewCopilotPage() {
     const [session, setSession] = useState<InterviewSession>({
         focusAreas: [],
         currentFocus: "",
-        questions: [],
-        currentIndex: 0,
         currentQuestion: "",
         questionCount: 0,
         history: [],
         started: false,
         finished: false,
-        finalResult: null
+        finalResult: null,
+        difficulty: "medium",
+        previousDifficulty: "",
+        maxQuestion: maxQuestionOptions[1]
     })
-
-    const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium")
-    const [previousDifficulty, setPreviousDifficulty] = useState<"easy" | "medium" | "hard" | "">("")
-    const difficultyLevel = ["easy", "medium", "hard"]
-    const maxQuestionOptions = [3, 5, 8]
-    const [maxQuestion, setMaxQuestion] = useState(maxQuestionOptions[1])
     
     const latestTurn = session.history[session.history.length - 1]
 
@@ -129,7 +129,6 @@ export default function InterviewCopilotPage() {
     const interviewStart = () => {
         setSession(prev => ({
             ...prev,
-            questions: result.interview_questions,
             currentQuestion: result.interview_questions[0],
             questionCount: 1,
             currentFocus: prev.focusAreas.length > 1 ? prev.focusAreas[0] : "",
@@ -140,11 +139,12 @@ export default function InterviewCopilotPage() {
     const submitAnswer = () => {
         const interviewForm = document.querySelector("#interview-form");
         setLoading(true);
+        console.log(session)
         const formData = new FormData(interviewForm as HTMLFormElement);
         const answer = formData.get("answer");
         fetch("/api/interview-turn", {
             method: "POST",
-            body: JSON.stringify({ question: session.currentQuestion, answer, history: session.history, focusAreas: session.focusAreas.length > 0 ? session.focusAreas : result.missing_skills, currentFocus: session.currentFocus, difficulty: difficulty }),
+            body: JSON.stringify({ question: session.currentQuestion, answer, history: session.history, focusAreas: session.focusAreas, currentFocus: session.currentFocus, difficulty: session.difficulty }),
         }).then(res => res.json()).then(data => {
             let parsed;
     
@@ -159,7 +159,7 @@ export default function InterviewCopilotPage() {
                 };
             }
             setSession(prev => {
-                const hasNext = prev.questionCount < maxQuestion
+                const hasNext = prev.questionCount < prev.maxQuestion
                 return {
                     ...prev,
                     currentFocus: parsed.next_focus,
@@ -174,23 +174,18 @@ export default function InterviewCopilotPage() {
                     ],
                     ...(hasNext && {questionCount: prev.questionCount + 1, currentQuestion: parsed.next_question}),
                     ...(!hasNext && {finished: true}),
+                    ...(hasNext && {difficulty: parsed.score <= 4 ? "easy" : parsed.score >= 8 ? "hard" : "medium"}),
+                    ...(hasNext && {previousDifficulty: prev.difficulty}),
                 }
             })
-            setPreviousDifficulty(difficulty)
-            if (parsed.score <= 4) {
-                setDifficulty("easy")
-            } else if (parsed.score >= 8) {
-                setDifficulty("hard")
-            } else {
-                setDifficulty("medium")
-            }
             setLoading(false);
         }).catch(err => {
             console.error(err);
         }).finally(() => {
             setLoading(false);
             setAnswer("")
-
+            console.log(session)
+            // localStorage.setItem("currentInterviewSession", JSON.stringify(session))
         }) 
     }
 
@@ -221,18 +216,29 @@ export default function InterviewCopilotPage() {
             const updated = [...existing, parsed].slice(-5)
 
             localStorage.setItem("history", JSON.stringify(updated))
-            // localStorage.setItem(
-            //     "lastReport",
-            //     JSON.stringify(parsed)
-            // )
-            router.push("/report")
+            localStorage.setItem("currentInterviewSession", JSON.stringify({...session, finalResult: parsed}))
+            console.log("Finished interview. Going to report page...")
             setLoading(false);
+            router.push("/report")
         }).catch(err => {
             console.error(err);
-        }).finally(() => {
             setLoading(false);
-        }) 
+        })
     }
+
+    useEffect(() => {
+        const saved = localStorage.getItem("currentInterviewSession")
+        if (saved) {
+            const parsed = JSON.parse(saved)
+            if (parsed) {
+                setSession(parsed)
+            }
+        }
+    }, [])
+
+    useEffect(() => {
+        localStorage.setItem("currentInterviewSession", JSON.stringify(session))
+    }, [session])
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -289,7 +295,7 @@ export default function InterviewCopilotPage() {
                                     </div>
                                     <div className="self-end">
                                         <label htmlFor="maxQuestion" className="mr-4">Interview length</label>
-                                        <select name="maxQuestion" id="maxQuestion" value={maxQuestion} onChange={(e) => setMaxQuestion(parseInt(e.target.value))} className="border-2 border-gray-300 rounded-md py-2 px-4">
+                                        <select name="maxQuestion" id="maxQuestion" value={session.maxQuestion} onChange={(e) => setSession(prev => ({ ...prev, maxQuestion: parseInt(e.target.value) }))} className="border-2 border-gray-300 rounded-md py-2 px-4">
                                             {maxQuestionOptions.map((option, index) => (
                                                 <option key={index} value={option}>{option}</option>
                                             ))}
@@ -323,16 +329,16 @@ export default function InterviewCopilotPage() {
                                 ) : (
                                     <div className="flex flex-col gap-2 mt-8">
                                         <div className="text-sm text-gray-500 self-end">
-                                            Question {session.questionCount} of {maxQuestion}
+                                            Question {session.questionCount} of {session.maxQuestion}
                                         </div>
                                         <div className="text-sm text-gray-500 self-end">
                                             <div className="inline-block mr-2">Difficulty: </div>
-                                            {!!previousDifficulty && previousDifficulty !== difficulty ? previousDifficulty + " → " : ""} 
-                                            <div className="inline-block mr-2">{difficulty}</div>
-                                            {!!previousDifficulty ? 
-                                                (difficultyLevel.indexOf(difficulty) > difficultyLevel.indexOf(previousDifficulty) ?
+                                            {!!session.previousDifficulty && session.previousDifficulty !== session.difficulty ? session.previousDifficulty + " → " : ""} 
+                                            <div className="inline-block mr-2">{session.difficulty}</div>
+                                            {!!session.previousDifficulty ? 
+                                                (difficultyLevel.indexOf(session.difficulty) > difficultyLevel.indexOf(session.previousDifficulty) ?
                                                     "↑" : 
-                                                    difficultyLevel.indexOf(difficulty) < difficultyLevel.indexOf(previousDifficulty) ? 
+                                                    difficultyLevel.indexOf(session.difficulty) < difficultyLevel.indexOf(session.previousDifficulty) ? 
                                                         "↓" : ""
                                                 ) : ""
                                             }

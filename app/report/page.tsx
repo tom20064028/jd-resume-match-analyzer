@@ -19,7 +19,7 @@ export default function ReportPage() {
     const router = useRouter();
     const [finalResult, setFinalResult] = useState<FinalResult | null>(null);
     const [history, setHistory] = useState<FinalResult[]>([]);
-    
+
     const scores = history.map(h => h.overall_score)
     const avg = scores.reduce((a,b) => a+b, 0) / scores.length
     const best = Math.max(...scores)
@@ -53,10 +53,12 @@ export default function ReportPage() {
     }, []);
 
     const restartInterview = () => {
+        localStorage.removeItem("currentInterviewSession")
         router.push("/interview-copilot");
     };
 
     const restartInterviewWithFocus = () => {
+        localStorage.removeItem("currentInterviewSession")
         if (!finalResult) router.push("/interview-copilot");
         const result = finalResult as FinalResult;
         router.push(
