@@ -106,7 +106,7 @@ export default function ReportPage() {
                             )}
                             {finalResult.weaknesses.length > 0 && (
                                 <>
-                                    <h3 className="text-lg font-semibold mt-4">Weaknesses</h3>
+                                    <h3 className="text-lg font-semibold mt-4">Focus next</h3>
                                     <ul>
                                         {finalResult.weaknesses.map((s: Weakness, i: number) => (
                                             <li className="list-disc list-inside" key={i}>{s.topic} – {s.description}</li>
