@@ -19,12 +19,11 @@ export default function Home() {
               </div>
 
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-                AI Career Toolkit
+                AI Interview Training, Powered by Your Resume
               </h1>
 
               <p className="max-w-2xl text-lg leading-relaxed text-gray-600 dark:text-gray-300">
-                AI-powered tools to help developers prepare for technical interviews. Practice interviews, analyze resumes,
-                and evaluate coding answers using LLMs.
+                Get personalized interview questions, real-time feedback, and a clear improvement path — all in one place.
               </p>
             </div>
 
@@ -49,7 +48,7 @@ export default function Home() {
                     href="/interview-copilot"
                     className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:hover:bg-blue-500"
                   >
-                    Start here
+                    Start Your Interview
                   </a>
                 </div>
               </div>
@@ -58,6 +57,31 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </section>
+
+        <section className="mt-10">
+          <h2 className="text-2xl font-bold tracking-tight">How to Try</h2>
+
+          <ol className="mt-4 space-y-3 text-gray-700 dark:text-gray-200">
+            <li className="flex gap-3">
+              <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                1
+              </span>
+              <span>Paste your resume and job description</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                2
+              </span>
+              <span>Practice a personalized AI interview</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                3
+              </span>
+              <span>Get feedback and improve instantly</span>
+            </li>
+          </ol>
         </section>
 
         <section className="mt-10">
@@ -112,36 +136,6 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mt-10">
-          <h2 className="text-2xl font-bold tracking-tight">How to Try</h2>
-
-          <ol className="mt-4 space-y-3 text-gray-700 dark:text-gray-200">
-            <li className="flex gap-3">
-              <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
-                1
-              </span>
-              <span>Go to Interview Copilot</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
-                2
-              </span>
-              <span>Paste a job description and resume</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
-                3
-              </span>
-              <span>Start interview preparation</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
-                4
-              </span>
-              <span>Try the interview simulator</span>
-            </li>
-          </ol>
-        </section>
       </main>
     </div>
   );
