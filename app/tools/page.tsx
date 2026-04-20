@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 type RoleOption = "frontend" | "backend" | "fullstack" | "mobile";
 type SeniorityOption = "junior" | "mid" | "senior";
 type LineBreakMode = "\\n" | "\\n\\n";
+type CodingProblemOption = "array-sum" | "linked-list" | "anagram" | "intervals";
+type CorrectnessOption = "incorrect" | "partial" | "strong";
 
 const roleLabels: Record<RoleOption, string> = {
   frontend: "Frontend Developer",
@@ -30,6 +32,19 @@ const seniorityTraits: Record<SeniorityOption, string[]> = {
   junior: ["strong fundamentals", "eagerness to learn", "good communication"],
   mid: ["independent delivery", "cross-team collaboration", "solid product sense"],
   senior: ["system design", "technical leadership", "mentoring experience"],
+};
+
+const codingProblemLabels: Record<CodingProblemOption, string> = {
+  "array-sum": "Two Sum",
+  "linked-list": "Reverse Linked List",
+  anagram: "Valid Anagram",
+  intervals: "Merge Intervals",
+};
+
+const correctnessLabels: Record<CorrectnessOption, string> = {
+  incorrect: "Incorrect",
+  partial: "Partially Correct",
+  strong: "Strong",
 };
 
 function buildSampleJobDescription(role: RoleOption, seniority: SeniorityOption) {
@@ -110,6 +125,175 @@ Additional Information
 - Interested in developer productivity, AI-assisted workflows, and product engineering`;
 }
 
+function buildCodingProblem(problemType: CodingProblemOption) {
+  if (problemType === "array-sum") {
+    return `Two Sum
+
+Given an array of integers nums and an integer target, return the indices of the two numbers such that they add up to target.
+
+Assume that each input has exactly one solution, and you may not use the same element twice.
+
+Example
+Input: nums = [2, 7, 11, 15], target = 9
+Output: [0, 1]
+
+Constraints
+- 2 <= nums.length <= 10^4
+- -10^9 <= nums[i] <= 10^9
+- -10^9 <= target <= 10^9`;
+  }
+
+  if (problemType === "linked-list") {
+    return `Reverse Linked List
+
+Given the head of a singly linked list, reverse the list and return the new head.
+
+Example
+Input: 1 -> 2 -> 3 -> 4 -> 5
+Output: 5 -> 4 -> 3 -> 2 -> 1
+
+Follow-up
+Can you solve it iteratively and recursively?`;
+  }
+
+  if (problemType === "anagram") {
+    return `Valid Anagram
+
+Given two strings s and t, return true if t is an anagram of s, and false otherwise.
+
+An anagram contains exactly the same characters with the same frequencies.
+
+Example
+Input: s = "anagram", t = "nagaram"
+Output: true
+
+Constraints
+- 1 <= s.length, t.length <= 5 * 10^4
+- s and t consist of lowercase English letters`;
+  }
+
+  return `Merge Intervals
+
+Given an array of intervals where intervals[i] = [start_i, end_i], merge all overlapping intervals and return an array of the non-overlapping intervals that cover all the intervals in the input.
+
+Example
+Input: [[1,3],[2,6],[8,10],[15,18]]
+Output: [[1,6],[8,10],[15,18]]
+
+Constraints
+- 1 <= intervals.length <= 10^4
+- intervals[i].length == 2
+- 0 <= start_i <= end_i <= 10^4`;
+}
+
+function buildCandidateSolution(
+  problemType: CodingProblemOption,
+  correctness: CorrectnessOption
+) {
+  const solutions: Record<CodingProblemOption, Record<CorrectnessOption, string>> = {
+    "array-sum": {
+      incorrect: `def two_sum(nums, target):
+    for i in range(len(nums)):
+        if nums[i] + nums[i] == target:
+            return [i, i]
+    return []`,
+      partial: `def two_sum(nums, target):
+    for i in range(len(nums)):
+        for j in range(i + 1, len(nums)):
+            if nums[i] + nums[j] == target:
+                return [i, j]
+    return []`,
+      strong: `def two_sum(nums, target):
+    seen = {}
+    for index, value in enumerate(nums):
+        complement = target - value
+        if complement in seen:
+            return [seen[complement], index]
+        seen[value] = index
+    return []`,
+    },
+    "linked-list": {
+      incorrect: `def reverse(head):
+    prev = None
+    current = head
+    while current:
+        current.next = prev
+        current = current.next
+    return current`,
+      partial: `def reverse(head):
+    prev = None
+    current = head
+    while current:
+        next_node = current.next
+        current.next = prev
+        prev = current
+        current = next_node
+    return prev`,
+      strong: `def reverse(head):
+    prev = None
+    current = head
+
+    while current is not None:
+        next_node = current.next
+        current.next = prev
+        prev = current
+        current = next_node
+
+    return prev`,
+    },
+    anagram: {
+      incorrect: `def is_anagram(s, t):
+    return sorted(s) == sorted(s)`,
+      partial: `def is_anagram(s, t):
+    if len(s) != len(t):
+        return False
+    return sorted(s) == sorted(t)`,
+      strong: `from collections import Counter
+
+def is_anagram(s, t):
+    if len(s) != len(t):
+        return False
+    return Counter(s) == Counter(t)`,
+    },
+    intervals: {
+      incorrect: `def merge(intervals):
+    return intervals`,
+      partial: `def merge(intervals):
+    if not intervals:
+        return []
+
+    intervals.sort()
+    merged = [intervals[0]]
+
+    for start, end in intervals[1:]:
+        last_end = merged[-1][1]
+        if start <= last_end:
+            merged[-1][1] = end
+        else:
+            merged.append([start, end])
+
+    return merged`,
+      strong: `def merge(intervals):
+    if not intervals:
+        return []
+
+    intervals.sort(key=lambda interval: interval[0])
+    merged = [intervals[0][:]]
+
+    for start, end in intervals[1:]:
+        last = merged[-1]
+        if start <= last[1]:
+            last[1] = max(last[1], end)
+        else:
+            merged.append([start, end])
+
+    return merged`,
+    },
+  };
+
+  return solutions[problemType][correctness];
+}
+
 function escapeMultilineContent(value: string, lineBreakMode: LineBreakMode) {
   const normalized = value.replace(/\r\n/g, "\n");
   const replacement = lineBreakMode;
@@ -136,6 +320,16 @@ export default function ToolsPage() {
   const [multilineInput, setMultilineInput] = useState("");
   const [singleLineInput, setSingleLineInput] = useState("");
   const [lineBreakMode, setLineBreakMode] = useState<LineBreakMode>("\\n");
+  const [codingProblemType, setCodingProblemType] =
+    useState<CodingProblemOption>("linked-list");
+  const [solutionCorrectness, setSolutionCorrectness] =
+    useState<CorrectnessOption>("partial");
+  const [codingProblem, setCodingProblem] = useState(() =>
+    buildCodingProblem("linked-list")
+  );
+  const [candidateSolution, setCandidateSolution] = useState(() =>
+    buildCandidateSolution("linked-list", "partial")
+  );
   const [copyMessage, setCopyMessage] = useState("");
 
   const escapedPreview = useMemo(
@@ -307,6 +501,101 @@ export default function ToolsPage() {
                 onChange={(event) => setResume(event.target.value)}
               />
             </div>
+          </div>
+        </section>
+
+        <section className="rounded-[2rem] border border-slate-200 bg-white/90 p-6 shadow-[0_16px_50px_rgba(15,23,42,0.06)] sm:p-8">
+          <div className="max-w-3xl">
+            <h2 className="text-3xl font-semibold tracking-tight">
+              Coding Interview Test Pair
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
+              Generate a coding problem together with a matching candidate solution
+              so you can quickly test the coding interview evaluation flow with
+              weak, partial, or strong answers.
+            </p>
+          </div>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <label className="text-sm font-medium text-slate-700">
+              Problem type
+              <select
+                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-blue-500"
+                value={codingProblemType}
+                onChange={(event) =>
+                  setCodingProblemType(event.target.value as CodingProblemOption)
+                }
+              >
+                {Object.entries(codingProblemLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="text-sm font-medium text-slate-700">
+              Solution quality
+              <select
+                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-blue-500"
+                value={solutionCorrectness}
+                onChange={(event) =>
+                  setSolutionCorrectness(event.target.value as CorrectnessOption)
+                }
+              >
+                {Object.entries(correctnessLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <button
+              type="button"
+              className="self-end rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
+              onClick={() => {
+                setCodingProblem(buildCodingProblem(codingProblemType));
+                setCandidateSolution(
+                  buildCandidateSolution(codingProblemType, solutionCorrectness)
+                );
+              }}
+            >
+              Generate Pair
+            </button>
+
+            <button
+              type="button"
+              className="self-end rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+              onClick={() =>
+                handleCopy(
+                  `Coding Problem\n${codingProblem}\n\nCandidate Solution\n${candidateSolution}`,
+                  "Problem and solution pair"
+                )
+              }
+            >
+              Copy Pair
+            </button>
+          </div>
+
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <label className="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-sm font-medium text-slate-700">
+              Coding problem
+              <textarea
+                className="mt-3 min-h-[18rem] w-full rounded-3xl border border-slate-300 bg-white p-4 font-mono text-sm leading-6 text-slate-800 outline-none transition focus:border-blue-500"
+                value={codingProblem}
+                onChange={(event) => setCodingProblem(event.target.value)}
+              />
+            </label>
+
+            <label className="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-sm font-medium text-slate-700">
+              Candidate solution
+              <textarea
+                className="mt-3 min-h-[18rem] w-full rounded-3xl border border-slate-300 bg-white p-4 font-mono text-sm leading-6 text-slate-800 outline-none transition focus:border-blue-500"
+                value={candidateSolution}
+                onChange={(event) => setCandidateSolution(event.target.value)}
+              />
+            </label>
           </div>
         </section>
 

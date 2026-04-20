@@ -5,12 +5,23 @@ import { useState, type SyntheticEvent } from "react";
 
 type Evaluation = {
     score: number,
+    correctness: string,
     bugs: string[],
+    improvements: string[],
+
     followup: string
+
+    strengths: string[],
+    weaknesses: string[],
+    improvement_plan: string[],
 }
 
 type SecondEvaluation = {
     score: number,
+    strengths: string[],
+    weaknesses: string[],
+    improvement_plan: string[],
+
     improvement: string,
     remaining_issues: string[]
 }
@@ -47,7 +58,11 @@ export default function CodingInterviewPage() {
                     mode: stage,
                     problem,
                     solution,
-                    feedback: evaluation?.followup ?? "",
+                    feedback: JSON.stringify({
+                        weaknesses: evaluation?.weaknesses ?? [],
+                        improvement_plan: evaluation?.improvement_plan ?? [],
+                        bugs: evaluation?.bugs ?? [],
+                    }),
                     followup_answer: followupanswer,
                 }),
             })
@@ -59,8 +74,13 @@ export default function CodingInterviewPage() {
                 } catch {
                     setEvaluation({
                         score: 0,
+                        correctness: "",
                         bugs: [],
-                        followup: ""
+                        improvements: [],
+                        followup: "",
+                        strengths: [],
+                        weaknesses: [],
+                        improvement_plan: [],
                     });
                 }
             } else {
@@ -70,6 +90,10 @@ export default function CodingInterviewPage() {
                 } catch {
                     setSecondEvaluation({
                         score: 0,
+                        strengths: [],
+                        weaknesses: [],
+                        improvement_plan: [],
+                    
                         improvement: "",
                         remaining_issues: []
                     });
@@ -115,7 +139,7 @@ export default function CodingInterviewPage() {
                         </div>
                         { stage === "initial" && 
                             <div className="grid w-full grid-cols-2 gap-4">
-                                <button type="submit" disabled={loading} className={`bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer`}>{"Ask Follow-up"}</button> 
+                                <button type="submit" disabled={loading} className={`bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer`}>{"Evaluate Solution"}</button> 
                                 <button type="button" onClick={fillExample} className={`bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer`}>{"Use example"}</button> 
                             </div>
                         }          
@@ -126,7 +150,37 @@ export default function CodingInterviewPage() {
                                     <div className="mt-4">
                                         <h3 className="text-lg font-semibold">Match Score</h3>
                                         <p>{evaluation.score}</p>
-                                        {evaluation.bugs?.length > 0 && (
+                                        {evaluation.strengths?.length > 0 && (
+                                            <>
+                                                <h3 className="text-lg font-semibold mt-4">Strengths</h3>
+                                                <ul>
+                                                    {evaluation.strengths?.map((q, i) => (
+                                                        <li className="list-disc list-inside" key={i}>{q}</li>
+                                                    ))}
+                                                </ul>
+                                            </>
+                                        )}
+                                        {evaluation.weaknesses?.length > 0 && (
+                                            <>
+                                                <h3 className="text-lg font-semibold mt-4">What you need to improve</h3>
+                                                <ul>
+                                                    {evaluation.weaknesses?.map((q, i) => (
+                                                        <li className="list-disc list-inside" key={i}>{q}</li>
+                                                    ))}
+                                                </ul>
+                                            </>
+                                        )}
+                                        {evaluation.improvement_plan?.length > 0 && (
+                                            <>
+                                                <h3 className="text-lg font-semibold mt-4">Next Steps</h3>
+                                                <ul>
+                                                    {evaluation.improvement_plan?.map((q, i) => (
+                                                        <li className="list-disc list-inside" key={i}>{q}</li>
+                                                    ))}
+                                                </ul>
+                                            </>
+                                        )}
+                                        {/* {evaluation.bugs?.length > 0 && (
                                             <>
                                                 <h3 className="text-lg font-semibold mt-4">Evaluation bugs</h3>
                                                 <ul>
@@ -135,8 +189,8 @@ export default function CodingInterviewPage() {
                                                     ))}
                                                 </ul>
                                             </>
-                                        )}
-                                        <h3 className="text-lg font-semibold mt-4">Follow-up</h3>
+                                        )} */}
+                                        <h3 className="text-lg font-semibold mt-4">Follow-up Question</h3>
                                         <p>{evaluation.followup}</p>
                                     </div>
                                 )}
@@ -152,7 +206,7 @@ export default function CodingInterviewPage() {
                                     />
                                 </div>
                                 <div className="grid w-full">
-                                    <button type="submit" disabled={loading} className={`bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer`}>{"Evaluate Code"}</button>
+                                    <button type="submit" disabled={loading} className={`bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer`}>{"Evaluate"}</button>
                                 </div>
                             </>
                         )}
@@ -160,7 +214,7 @@ export default function CodingInterviewPage() {
                     </form>
                     {secondEvaluation && (
                             <div className="flex flex-col gap-2 mt-4">
-                                <h2 className="text-2xl font-bold">Result</h2> 
+                                <h2 className="text-2xl font-bold">Updated Evaluation</h2> 
                                 {secondEvaluation && (
                                     <div className="mt-4">
                                         <h3 className="text-lg font-semibold">Match Score</h3>
