@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type SyntheticEvent } from "react";
+import { useRouter } from 'next/navigation'
 
 
 type Evaluation = {
@@ -26,9 +27,11 @@ type SecondEvaluation = {
     remaining_issues: string[]
 }
 
-type Stage = "initial" | "followup"
+type Stage = "initial" | "followup" | "finished"
 
 export default function CodingInterviewPage() {
+
+    const router = useRouter()
 
     const [problem, setProblem] = useState("")
     const [solution, setSolution] = useState("")
@@ -51,6 +54,7 @@ export default function CodingInterviewPage() {
             const problem = typeof problemEntry === "string" ? problemEntry : "";
             const solution = typeof solutionEntry === "string" ? solutionEntry : "";
             const followupanswer = typeof followupanswerEntry === "string" ? followupanswerEntry : "";
+            console.log(stage)
             const res = await fetch("/api/code-evaluate", {
                 method: "POST",
                 // `route.ts` expects: mode, problem, solution, feedback, followup_answer
@@ -105,6 +109,8 @@ export default function CodingInterviewPage() {
             if (stage === "initial") {
                 console.log("test")
                 setStage("followup")
+            } else {
+                setStage("finished")
             }
         }
     }
@@ -122,82 +128,83 @@ export default function CodingInterviewPage() {
                     <div className="flex flex-col gap-2">
                         <h1 className="text-4xl font-bold">Coding Interview</h1>
                     </div>
-                    <form className="flex flex-col gap-4" onSubmit={(e) => submitForm(e)}>
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="problem">Coding Problem</label>
-                            <textarea
-                                name="problem" id="problem" value={problem} onChange={(e) => setProblem(e.target.value)}
-                                placeholder="Paste Coding Problem" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} 
-                            />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="solution">Candidate Solution</label>
-                            <textarea
-                                name="solution" id="solution" value={solution} onChange={(e) => setSolution(e.target.value)}
-                                placeholder="Paste your Solution" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} 
-                            />
-                        </div>
-                        { stage === "initial" && 
-                            <div className="grid w-full grid-cols-2 gap-4">
-                                <button type="submit" disabled={loading} className={`bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer`}>{"Evaluate Solution"}</button> 
-                                <button type="button" onClick={fillExample} className={`bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer`}>{"Use example"}</button> 
-                            </div>
-                        }          
-                        {evaluation && (
-                            <div className="flex flex-col gap-2 mt-4">
-                                <h2 className="text-2xl font-bold">Result</h2> 
-                                {evaluation && (
-                                    <div className="mt-4">
-                                        <h3 className="text-lg font-semibold">Match Score</h3>
-                                        <p>{evaluation.score}</p>
-                                        {evaluation.strengths?.length > 0 && (
-                                            <>
-                                                <h3 className="text-lg font-semibold mt-4">Strengths</h3>
-                                                <ul>
-                                                    {evaluation.strengths?.map((q, i) => (
-                                                        <li className="list-disc list-inside" key={i}>{q}</li>
-                                                    ))}
-                                                </ul>
-                                            </>
-                                        )}
-                                        {evaluation.weaknesses?.length > 0 && (
-                                            <>
-                                                <h3 className="text-lg font-semibold mt-4">What you need to improve</h3>
-                                                <ul>
-                                                    {evaluation.weaknesses?.map((q, i) => (
-                                                        <li className="list-disc list-inside" key={i}>{q}</li>
-                                                    ))}
-                                                </ul>
-                                            </>
-                                        )}
-                                        {evaluation.improvement_plan?.length > 0 && (
-                                            <>
-                                                <h3 className="text-lg font-semibold mt-4">Next Steps</h3>
-                                                <ul>
-                                                    {evaluation.improvement_plan?.map((q, i) => (
-                                                        <li className="list-disc list-inside" key={i}>{q}</li>
-                                                    ))}
-                                                </ul>
-                                            </>
-                                        )}
-                                        {/* {evaluation.bugs?.length > 0 && (
-                                            <>
-                                                <h3 className="text-lg font-semibold mt-4">Evaluation bugs</h3>
-                                                <ul>
-                                                    {evaluation.bugs?.map((q, i) => (
-                                                        <li className="list-disc list-inside" key={i}>{q}</li>
-                                                    ))}
-                                                </ul>
-                                            </>
-                                        )} */}
-                                        <h3 className="text-lg font-semibold mt-4">Follow-up Question</h3>
-                                        <p>{evaluation.followup}</p>
-                                    </div>
-                                )}
+                    
+                    <form onSubmit={(e) => submitForm(e)}>
+                        { stage === "initial" && (
+                            <div className="flex flex-col gap-4">
+                                <div className="flex flex-col gap-2">
+                                    <label htmlFor="problem">Coding Problem</label>
+                                    <textarea
+                                        name="problem" id="problem" value={problem} onChange={(e) => setProblem(e.target.value)}
+                                        placeholder="Paste Coding Problem" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} 
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label htmlFor="solution">Candidate Solution</label>
+                                    <textarea
+                                        name="solution" id="solution" value={solution} onChange={(e) => setSolution(e.target.value)}
+                                        placeholder="Paste your Solution" className="w-full border-2 border-gray-300 rounded-md p-2" rows={10} 
+                                    />
+                                </div>
+                                <div className="grid w-full grid-cols-2 gap-4">
+                                    <button type="submit" disabled={loading} className={`bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer`}>{"Evaluate Solution"}</button> 
+                                    <button type="button" onClick={fillExample} className={`bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer`}>{"Use example"}</button> 
+                                </div>
                             </div>
                         )}
                         { stage === "followup" && (
-                            <>
+                            <div className="flex flex-col gap-4">
+                                <div className="flex flex-col gap-2 mt-4">
+                                    <h2 className="text-2xl font-bold">Result</h2> 
+                                    {evaluation && (
+                                        <div className="mt-4">
+                                            <h3 className="text-lg font-semibold">Match Score</h3>
+                                            <p>{evaluation.score}</p>
+                                            {evaluation.strengths?.length > 0 && (
+                                                <>
+                                                    <h3 className="text-lg font-semibold mt-4">Strengths</h3>
+                                                    <ul>
+                                                        {evaluation.strengths?.map((q, i) => (
+                                                            <li className="list-disc list-inside" key={i}>{q}</li>
+                                                        ))}
+                                                    </ul>
+                                                </>
+                                            )}
+                                            {evaluation.weaknesses?.length > 0 && (
+                                                <>
+                                                    <h3 className="text-lg font-semibold mt-4">What you need to improve</h3>
+                                                    <ul>
+                                                        {evaluation.weaknesses?.map((q, i) => (
+                                                            <li className="list-disc list-inside" key={i}>{q}</li>
+                                                        ))}
+                                                    </ul>
+                                                </>
+                                            )}
+                                            {evaluation.improvement_plan?.length > 0 && (
+                                                <>
+                                                    <h3 className="text-lg font-semibold mt-4">Next Steps</h3>
+                                                    <ul>
+                                                        {evaluation.improvement_plan?.map((q, i) => (
+                                                            <li className="list-disc list-inside" key={i}>{q}</li>
+                                                        ))}
+                                                    </ul>
+                                                </>
+                                            )}
+                                            {/* {evaluation.bugs?.length > 0 && (
+                                                <>
+                                                    <h3 className="text-lg font-semibold mt-4">Evaluation bugs</h3>
+                                                    <ul>
+                                                        {evaluation.bugs?.map((q, i) => (
+                                                            <li className="list-disc list-inside" key={i}>{q}</li>
+                                                        ))}
+                                                    </ul>
+                                                </>
+                                            )} */}
+                                            <h3 className="text-lg font-semibold mt-4">Follow-up Question</h3>
+                                            <p>{evaluation.followup}</p>
+                                        </div>
+                                    )}
+                                </div>
                                 <div className="flex flex-col gap-2">
                                     <label htmlFor="followupanswer">Your Follow-up Answer</label>
                                     <textarea
@@ -206,38 +213,43 @@ export default function CodingInterviewPage() {
                                     />
                                 </div>
                                 <div className="grid w-full">
-                                    <button type="submit" disabled={loading} className={`bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer`}>{"Evaluate"}</button>
+                                    <button type="submit" disabled={loading} className={`bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer`}>{"Submit Follow-up"}</button>
                                 </div>
-                            </>
-                        )}
-                        
-                    </form>
-                    {secondEvaluation && (
-                            <div className="flex flex-col gap-2 mt-4">
-                                <h2 className="text-2xl font-bold">Updated Evaluation</h2> 
-                                {secondEvaluation && (
-                                    <div className="mt-4">
-                                        <h3 className="text-lg font-semibold">Match Score</h3>
-                                        <p>{secondEvaluation.score}</p>
-
-                                        <h3 className="text-lg font-semibold mt-4">Improvement</h3>
-                                        <p>{secondEvaluation.improvement}</p>
-
-                                        {secondEvaluation.remaining_issues?.length > 0 && (
-                                            <>
-                                                <h3 className="text-lg font-semibold mt-4">Remaining Issues</h3>
-                                                <ul>
-                                                    {secondEvaluation.remaining_issues?.map((q, i) => (
-                                                        <li className="list-disc list-inside" key={i}>{q}</li>
-                                                    ))}
-                                                </ul>
-                                            </>
-                                        )}
-                                        
-                                    </div>
-                                )}
                             </div>
                         )}
+                    </form>
+
+                    { stage === "finished" && (
+                        <div className="flex flex-col gap-2 mt-4">
+                            <h2 className="text-2xl font-bold">Updated Evaluation</h2> 
+                            {secondEvaluation && (
+                                <div className="mt-4">
+                                    <h3 className="text-lg font-semibold">Match Score</h3>
+                                    <p>{secondEvaluation.score}</p>
+
+                                    <h3 className="text-lg font-semibold mt-4">Improvement</h3>
+                                    <p>{secondEvaluation.improvement}</p>
+
+                                    {secondEvaluation.remaining_issues?.length > 0 && (
+                                        <>
+                                            <h3 className="text-lg font-semibold mt-4">Remaining Issues</h3>
+                                            <ul>
+                                                {secondEvaluation.remaining_issues?.map((q, i) => (
+                                                    <li className="list-disc list-inside" key={i}>{q}</li>
+                                                ))}
+                                            </ul>
+                                        </>
+                                    )}
+                                    
+                                </div>
+                            )}
+                            <div className="grid w-full">
+                                <button type="button" onClick={() => {
+                                    router.push("/coding-interview")
+                                }} disabled={loading} className={`bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer`}>{"Try again"}</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </main>
         </div>
